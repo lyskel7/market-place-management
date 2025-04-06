@@ -5,11 +5,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const params = req.nextUrl.searchParams;
+    // const params = req.nextUrl.searchParams;
     const requestData = await req.json();
 
     const response: AxiosResponse<IBooleanResponse> = await axios.post(
-      `${EXTERNAL_BASE_URL}/create?${params.toString()}`,
+      `${EXTERNAL_BASE_URL}/create`,
       requestData,
     );
 

@@ -9,6 +9,7 @@ export async function DELETE(req: NextRequest) {
     const response: AxiosResponse<IBooleanResponse> = await axios.delete(
       `${EXTERNAL_BASE_URL}/delete?${params.toString()}`,
     );
+
     return NextResponse.json(response.data);
   } catch (error) {
     console.log('error: ', error);

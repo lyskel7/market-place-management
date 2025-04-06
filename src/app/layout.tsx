@@ -4,6 +4,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import ClassIcon from '@mui/icons-material/Class';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import TurnedInIcon from '@mui/icons-material/TurnedIn';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import WysiwygIcon from '@mui/icons-material/Wysiwyg';
 import type { Navigation } from '@toolpad/core/AppProvider';
 import theme from '@/styles/theme';
@@ -22,7 +23,7 @@ const NAVIGATION: Navigation = [
   },
   {
     kind: 'header',
-    title: 'Categories - Subcategories - Variations',
+    title: 'Classifier',
   },
   {
     segment: 'categories',
@@ -38,6 +39,18 @@ const NAVIGATION: Navigation = [
     segment: 'variations',
     title: 'Variations',
     icon: <WysiwygIcon />,
+  },
+  {
+    kind: 'divider',
+  },
+  {
+    kind: 'header',
+    title: 'Stats',
+  },
+  {
+    segment: 'stats',
+    title: 'Stats',
+    icon: <BarChartIcon />,
   },
 ];
 

@@ -1,23 +1,31 @@
 'use client';
+import { SCAN_LIMIT } from '@/lib/constants/frontend';
+import { ETypes } from '@/lib/enums';
+import useFetcher from '@/lib/hooks/useFetcher';
+import { useCategoryStore } from '@/lib/stores';
+import ReplayIcon from '@mui/icons-material/Replay';
 import {
+  Box,
   Button,
+  LinearProgress,
   List,
   ListItem,
   ListItemText,
-  // Paper,
-  Stack,
   Typography,
 } from '@mui/material';
-import CategoryComp from './CategoryComp';
-// import CategoriesPagination from '../common/Pagination';
-import useCategoriesFetcher from '@/lib/hooks/useCategoriesFetcher';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef } from 'react';
-import { ICategory } from '@/lib/interfaces';
 import { toast } from 'react-toastify';
-import { useCategoryStore } from '@/lib/stores';
 import { useShallow } from 'zustand/react/shallow';
+import CategoryComp from './CategoryComp';
 
-const CategoriesComp = () => {
+const CategoriesComp = ({ etype }: { etype: ETypes }) => {
+  const { selAutocomplete } = useCategoryStore(
+    useShallow((state) => ({
+      selAutocomplete: state.selAutocomplete,
+    })),
+  );
+
   const {
     items,
     isLoading,
@@ -26,17 +34,21 @@ const CategoriesComp = () => {
     isFetchingNextPage,
     error,
     isError,
-    refetch,
-  } = useCategoriesFetcher();
-
-  const { onRefetch } = useCategoryStore(
-    useShallow((state) => ({
-      onRefetch: state.onRefetch,
-    })),
+  } = useFetcher(
+    {
+      pk: etype,
+      limit: SCAN_LIMIT,
+      lastEvaluatedKey: undefined,
+      ...(etype === ETypes.SUBCATEGORY && selAutocomplete
+        ? { sk: selAutocomplete.sk }
+        : {}),
+    },
+    etype,
+    !!selAutocomplete || etype === ETypes.CATEGORY,
   );
+  const queryClient = useQueryClient();
 
   const observer = useRef<IntersectionObserver | null>(null);
-  onRefetch(refetch);
 
   const lastCategoryRef = useCallback(
     (node: HTMLLIElement | null) => {
@@ -47,7 +59,6 @@ const CategoriesComp = () => {
       observer.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && hasNextPage) {
-            console.log('Visible, fetching next page');
             fetchNextPage();
           }
         },
@@ -63,9 +74,12 @@ const CategoriesComp = () => {
     [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage],
   );
 
-  if (isLoading) {
-    return <div>Cargando categorías...</div>;
-  }
+  const handleRefetch = () => {
+    queryClient.removeQueries({ queryKey: [etype] });
+    queryClient.refetchQueries({ queryKey: [etype] });
+  };
+
+  if (isLoading) <LinearProgress />;
 
   if (isError) {
     toast.error(error?.message, {
@@ -75,55 +89,51 @@ const CategoriesComp = () => {
     return;
   }
 
-  const categories: ICategory[] = items || [];
-
   return (
     <>
-      <Button
-        sx={{ alignSelf: 'flex-end' }}
-        onClick={() => refetch()}
+      <Box
+        display={'flex'}
+        justifyContent={'space-between'}
+        alignItems={'center'}
       >
-        Reload
-      </Button>
-
-      <Stack
-        gap={2}
-        height={500}
-        overflow={'auto'}
-      >
-        <List
-          sx={{ width: 1, height: 1, flex: 1 }}
-          id="scrollableDiv"
+        <Typography variant="caption">
+          Loaded {items?.length || 0}
+          {`${hasNextPage ? ' and remaining more...' : ' and no more'}`}
+        </Typography>
+        <Button
+          sx={{ alignSelf: 'flex-end' }}
+          onClick={handleRefetch}
+          startIcon={<ReplayIcon />}
         >
-          {categories?.map((cat, index) => {
-            const isLastElement = categories.length === index + 1;
-            return (
-              <CategoryComp
-                key={cat.PK}
-                ref={isLastElement ? lastCategoryRef : null}
-                category={cat}
-                onRefetch={refetch}
-              />
-            );
-          })}
-          {isFetchingNextPage && (
-            <ListItem>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body2"
-                    color="textSecondary"
-                  >
-                    Cargando más categorías...
-                  </Typography>
-                }
-              />
-            </ListItem>
-          )}
-        </List>
+          Reload
+        </Button>
+      </Box>
 
-        {/* <CategoriesPagination count={count} /> */}
-      </Stack>
+      <List
+        sx={{
+          width: 1,
+          height: 500,
+          id: 'scrollableDiv', //This id is important for intersection in infinite scroll
+          overflow: 'auto',
+        }}
+      >
+        {items?.map((cat, index) => {
+          const isLastElement = items.length === index + 1;
+          return (
+            <CategoryComp
+              key={cat.sk}
+              ref={isLastElement ? lastCategoryRef : null}
+              category={cat}
+              etype={etype}
+            />
+          );
+        })}
+        {isFetchingNextPage && (
+          <ListItem>
+            <ListItemText primary={<LinearProgress />} />
+          </ListItem>
+        )}
+      </List>
     </>
   );
 };

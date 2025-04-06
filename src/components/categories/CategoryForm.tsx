@@ -11,15 +11,12 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
-// import { categorySchema } from '@/lib/schemas';
-// import useCategoriesFetcher from '@/lib/hooks/useCategoriesFetcher';
-import { ICategory } from '@/lib/interfaces';
+import { FieldValues, useForm } from 'react-hook-form';
+import { ICategory, ICreateItemParam } from '@/lib/interfaces';
 import { customeSchema } from '@/lib/schemas';
 import { useCategoryStore } from '@/lib/stores';
 import * as MuiIcons from '@mui/icons-material';
-// import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { v4 } from 'uuid';
 import { useShallow } from 'zustand/react/shallow';
@@ -27,15 +24,28 @@ import MuiIconDialog from '../common/MuiIconDialog';
 import MuiIconRender from '../common/MuiIconRender';
 import { ETypes } from '@/lib/enums';
 import { createItem, updateItem } from '@/lib/apis/db';
+import { useQueryClient } from '@tanstack/react-query';
 
-const CategoryForm = () => {
+const CategoryForm = ({ etype }: { etype: ETypes }) => {
   const { isMobile } = useResponsive();
-  const { editedCategory, categories, sRefetch, onEdit } = useCategoryStore(
+  const {
+    selCat,
+    categories,
+    selAutocomplete,
+    isUpdating,
+    setIsUpdating,
+    onSelCat,
+    onSelAutocomplete,
+  } = useCategoryStore(
     useShallow((state) => ({
-      editedCategory: state.editedCategory,
+      selCat: state.selCat,
+      selAutocomplete: state.selAutocomplete,
       categories: state.categories,
-      sRefetch: state.sRefetch,
-      onEdit: state.onEdit,
+      isUpdating: state.isUpdating,
+      onSelAutocomplete: state.onSelAutocomplete,
+      setIsUpdating: state.setIsUpdating,
+      onSelCat: state.onSelCat,
+      setItemsTotalInDB: state.setItemsTotalInDB,
     })),
   );
   const [openIcons, setOpenIcons] = useState(false);
@@ -47,13 +57,16 @@ const CategoryForm = () => {
     reset,
     setValue,
     formState: { errors },
-  } = useForm({ resolver: joiResolver(customeSchema('category')) });
+  } = useForm({ resolver: joiResolver(customeSchema(etype)) });
 
-  const handleFormReset = () => {
+  const queryClient = useQueryClient();
+
+  const handleFormReset = useCallback(() => {
     reset();
     setSelectedIcon('Apps');
-    onEdit(null);
-  };
+    onSelCat(null);
+    setIsUpdating(false);
+  }, [onSelCat, reset, setIsUpdating]);
 
   const handleOpenIcons = () => {
     setOpenIcons(true);
@@ -63,78 +76,136 @@ const CategoryForm = () => {
     setSelectedIcon(iconName);
   };
 
-  const handleExistCategory = (category: string): boolean => {
+  const handleExistElement = (element: string): boolean => {
+    let existElement = false;
+    let selectedElement = '';
+
     if (!categories?.length) return false;
-    return categories.some(
-      (cat) => cat.category.toLowerCase() === category.toLowerCase(),
-    );
+
+    switch (etype) {
+      case ETypes.CATEGORY:
+      case ETypes.SUBCATEGORY:
+        existElement = categories.some(
+          (cat) => cat?.itemName?.toLowerCase() === element.toLowerCase(),
+        );
+        selectedElement = selCat?.itemName || '';
+        break;
+      default:
+        break;
+    }
+
+    const result =
+      existElement &&
+      ((isUpdating && element !== selectedElement) || !isUpdating);
+    return result;
+  };
+
+  const conformedCategory = (pData: FieldValues): Partial<ICategory> => {
+    const justNow = new Date().toISOString();
+
+    const createSKForCategory = () => {
+      if (isUpdating && selCat) {
+        return selCat?.sk;
+      }
+
+      if (etype === ETypes.SUBCATEGORY && selAutocomplete) {
+        return selAutocomplete.sk + '_' + v4();
+      }
+
+      return v4();
+    };
+
+    const conformed: Partial<ICategory> = {
+      pk: etype || selCat?.pk,
+      sk: createSKForCategory(),
+      itemName: pData.itemName,
+      itemDesc: pData.itemDesc,
+      ...(isUpdating ? {} : { created: justNow }),
+      updated: justNow,
+      ...(etype === ETypes.SUBCATEGORY ? {} : { icon: selectedIcon }),
+      ...(etype === ETypes.CATEGORY
+        ? { subItemsCount: selCat?.subItemsCount || 0 }
+        : {}),
+      hidden: selCat?.hidden || false,
+    };
+    console.log('conformed: ', conformed);
+    console.log('selcat: ', selCat);
+    return conformed;
   };
 
   const handleOnSubmit = handleSubmit(async (data) => {
-    const { category, category_desc } = data;
+    console.log('subumit', data);
+    if (etype === ETypes.SUBCATEGORY && !selAutocomplete) {
+      toast.warning('Select a category');
+      return;
+    }
 
-    const existCategory = handleExistCategory(category);
-    if (existCategory && category !== editedCategory?.category) {
-      toast.error(`Category name '${category}' already in use`);
+    const elementName = data.itemName;
+
+    const existElement = handleExistElement(elementName);
+    if (existElement) {
+      toast.error(
+        `${etype.charAt(0).toUpperCase()}${etype.slice(1)} name '${elementName}' already in use`,
+      );
       return;
     }
 
     try {
-      const nowDate = new Date().toISOString();
+      const conformedItem = conformedCategory(data);
+      if (isUpdating) {
+        await updateItem(conformedItem);
+        console.log('conformedItem: ', conformedItem);
 
-      const categoryBase: Partial<ICategory> = {
-        type: ETypes.CATEGORY,
-        subcategory_desc: '',
-        attributes: [],
-        variations: [],
-        created: nowDate,
-      };
-
-      const newCategory: Partial<ICategory> = {
-        ...(!editedCategory ? categoryBase : {}),
-        PK: editedCategory?.PK || `category#${v4()}`,
-        SK: 'subcategory#',
-        category: category,
-        category_desc: category_desc,
-        updated: nowDate,
-        hidden: editedCategory?.hidden || false,
-        icon: selectedIcon,
-      };
-
-      if (editedCategory) {
-        await updateItem(newCategory);
-        console.log('update');
+        setIsUpdating(false);
       } else {
-        await createItem(newCategory, true);
+        const createItemParam: ICreateItemParam = {
+          item: conformedItem,
+          first: !categories.length,
+          etype,
+        };
+        await createItem(createItemParam);
+        console.log('createItem: ', createItemParam);
       }
 
       toast.success(
-        `Category ${editedCategory ? 'updated' : 'created'} successfully`,
+        `${etype.charAt(0).toUpperCase()}${etype.slice(1)} ${selCat ? 'updated' : 'created'} successfully`,
       );
       handleFormReset();
-      sRefetch();
+      await queryClient.refetchQueries({ queryKey: [etype] });
+      await queryClient.invalidateQueries({
+        queryKey: ['categories_selector'],
+      });
     } catch (error) {
       console.debug(
-        `Category could not be ${editedCategory ? 'updated' : 'created'}`,
+        `Category could not be ${selCat ? 'updated' : 'created'}`,
         error,
       );
-      toast.error(
-        `Category could not be ${editedCategory ? 'updated' : 'inserted'}`,
-      );
+      toast.error(`Category could not be ${selCat ? 'updated' : 'inserted'}`);
     }
   });
 
   useEffect(() => {
-    if (editedCategory) {
-      setValue('category', editedCategory.category);
-      setValue('category_desc', editedCategory.category_desc);
-      setSelectedIcon(editedCategory.icon || 'Apps');
+    if (selCat) {
+      setValue('itemName', selCat.itemName);
+      setValue('itemDesc', selCat.itemDesc);
+      setSelectedIcon(selCat.icon || 'Apps');
     } else {
-      setValue('category', '');
-      setValue('category_desc', '');
+      setValue('itemName', '');
+      setValue('itemDesc', '');
       setSelectedIcon('Apps');
     }
-  }, [editedCategory, setValue, setSelectedIcon]);
+  }, [selCat, setValue, setSelectedIcon, etype]);
+
+  useEffect(() => {
+    return () => {
+      handleFormReset();
+      onSelAutocomplete(null);
+    };
+  }, [handleFormReset, onSelAutocomplete]);
+
+  // useEffect(() => {
+  //   console.log('Form Errors:', errors);
+  // }, [errors]);
 
   return (
     <form onSubmit={handleOnSubmit}>
@@ -154,32 +225,36 @@ const CategoryForm = () => {
         >
           <TextField
             fullWidth
-            error={Boolean(errors.category)}
-            id="category"
-            placeholder="Type the category"
+            error={Boolean(errors['itemName'])}
+            id={'itemName'}
+            placeholder={`Type the ${etype}`}
             variant="outlined"
             size="small"
-            {...register('category')}
+            {...register('itemName')}
             slotProps={{
               htmlInput: {
                 maxLength: 30,
               },
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      id="btn-muirender"
-                      onClick={handleOpenIcons}
-                    >
-                      <MuiIconRender iconName={selectedIcon} />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
+              ...(etype === ETypes.CATEGORY
+                ? {
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            id="btn-muirender"
+                            onClick={handleOpenIcons}
+                          >
+                            <MuiIconRender iconName={selectedIcon} />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }
+                : {}),
             }}
             helperText={
-              errors.category && Boolean(errors.category)
-                ? errors.category?.message?.toString()
+              errors.itemName && Boolean(errors.itemName)
+                ? errors.itemName?.message?.toString()
                 : null
             }
           />
@@ -191,18 +266,19 @@ const CategoryForm = () => {
           alignItems={'center'}
         >
           <TextField
+            id="itemDesc"
             fullWidth
             multiline
             rows={4}
-            error={Boolean(errors.category_desc)}
-            id="category_desc"
+            error={Boolean(errors.itemDesc)}
             placeholder="Description"
             variant="outlined"
             size="small"
-            {...register('category_desc')}
+            {...register('itemDesc')}
+            name="itemDesc"
             helperText={
-              errors.category_desc && Boolean(errors.category_desc)
-                ? errors.category_desc?.message?.toString()
+              errors.itemDesc && Boolean(errors.itemDesc)
+                ? errors.itemDesc?.message?.toString()
                 : null
             }
           />
@@ -212,12 +288,13 @@ const CategoryForm = () => {
           direction={'row'}
           justifyContent={'flex-end'}
           mr={5}
+          width={1}
         >
           <Button
             startIcon={<AddIcon />}
             type="submit"
           >
-            {editedCategory ? 'Update' : 'Add'}
+            {isUpdating ? 'Update' : 'Add'}
           </Button>
           <Button
             startIcon={<CleaningServicesIcon />}

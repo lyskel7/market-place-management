@@ -2,19 +2,17 @@ import * as MuiIcons from '@mui/icons-material';
 import { ETypes } from '../enums';
 
 export interface ISingleTable {
-  PK: string;
-  SK: string;
-  type: ETypes;
+  pk: string;
+  sk: string;
   created: Date | string;
   updated: Date | string;
   hidden: boolean;
 }
 
 export interface ICategory extends ISingleTable {
-  category: string;
-  category_desc: string;
-  subcategory: string;
-  subcategory_desc: string;
+  itemName: string;
+  itemDesc: string;
+  subItemsCount: number;
   attributes: Array<string> | object | undefined;
   variations: Array<string> | object | undefined;
   icon: keyof typeof MuiIcons;
@@ -30,7 +28,6 @@ export interface IProfile extends ISingleTable {
 export type IPaginatedResult<T> = {
   items: T[];
   lastEvaluatedKey: Record<string, string> | undefined;
-  itemsCount: number;
 };
 
 export interface IBooleanResponse {
@@ -39,16 +36,21 @@ export interface IBooleanResponse {
 }
 
 export interface IPageParams {
-  type: ETypes;
+  pk: string;
   limit: number;
+  sk?: string;
   lastEvaluatedKey?: Record<string, string>;
-  pk?: string;
+}
+
+export interface ICreateItemParam {
+  item: Partial<ICategory>;
+  first: boolean;
+  etype: ETypes;
 }
 
 export interface IURLDeleteParams {
-  type: ETypes;
   pk: string;
-  sk?: string;
+  sk: string;
 }
 
 // export type TPageParams = {

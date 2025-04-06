@@ -17,12 +17,11 @@ export const getItems = async (
   return resp.data;
 };
 
-export const createItem = async <T>(
-  item: T,
-  first?: boolean,
-): Promise<boolean> => {
-  const path = `?first=${first}`;
-  return await AxiosWrapper.getInstance().post<T>(`/items/create${path}`, item);
+export const createItem = async <T>(createItemParam: T): Promise<boolean> => {
+  return await AxiosWrapper.getInstance().post<T>(
+    '/items/create',
+    createItemParam,
+  );
 };
 
 export const updateItem = async <T>(item: T): Promise<boolean> => {

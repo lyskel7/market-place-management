@@ -1,1 +1,1 @@
-export const SCAN_LIMIT = 10;
+export const SCAN_LIMIT = 200;

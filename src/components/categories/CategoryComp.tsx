@@ -1,14 +1,12 @@
 'use client';
 import { deleteItems, updateItem } from '@/lib/apis/db';
-import { ETypes } from '@/lib/enums';
 import useResponsive from '@/lib/hooks/useResponsive';
 import {
   ICategory,
-  IPaginatedResult,
+  // IPaginatedResult,
   IURLDeleteParams,
 } from '@/lib/interfaces';
 import { useCategoryStore } from '@/lib/stores';
-import { extractIdFromDynamoDBKey } from '@/utils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -26,39 +24,35 @@ import {
   Switch,
   Tooltip,
 } from '@mui/material';
-import { InfiniteData, QueryObserverResult } from '@tanstack/react-query';
+// import { InfiniteData, QueryObserverResult } from '@tanstack/react-query';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useShallow } from 'zustand/react/shallow';
 import MuiIconRender from '../common/MuiIconRender';
 import ConfirmationDialog from '../common/Snackbar';
+import { ETypes } from '@/lib/enums';
+import { useQueryClient } from '@tanstack/react-query';
 
 type TProps = {
   category: ICategory;
+  etype: ETypes;
   ref: ((node: HTMLLIElement | null) => void) | null;
-  onRefetch: () => Promise<
-    QueryObserverResult<
-      InfiniteData<IPaginatedResult<ICategory>, unknown>,
-      Error
-    >
-  >;
 };
 
 const CategoryComp = (props: TProps) => {
-  const { category, ref, onRefetch } = props;
-  const {
-    PK,
-    SK,
-    category: category_name,
-    category_desc,
-    icon,
-    hidden,
-  } = category;
+  const { category, ref, etype } = props;
+  const { pk, sk, itemName, itemDesc, icon, hidden } = category;
   const { isMobile } = useResponsive();
   const [checked, setChecked] = useState(hidden);
   const [open, setOpen] = useState(false);
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
-  const editCategory = useCategoryStore(useShallow((state) => state.onEdit));
+  const { onSelCat, setIsUpdating } = useCategoryStore(
+    useShallow((state) => ({
+      setIsUpdating: state.setIsUpdating,
+      onSelCat: state.onSelCat,
+    })),
+  );
+  const queryClient = useQueryClient();
 
   const handleClick = () => {
     setOpen(!open);
@@ -70,12 +64,13 @@ const CategoryComp = (props: TProps) => {
     setChecked(checked);
     try {
       const updatedCategory: Partial<ICategory> = {
-        PK,
-        SK,
+        pk,
+        sk,
         hidden: checked,
+        updated: new Date().toISOString(),
       };
       await updateItem(updatedCategory);
-      onRefetch();
+      await queryClient.refetchQueries({ queryKey: [etype] });
     } catch (error) {
       console.debug('Category could not be updated', error);
       toast.error(`Category could not be updated`);
@@ -85,13 +80,16 @@ const CategoryComp = (props: TProps) => {
   const handleDelete = async () => {
     try {
       const urlDeleteParam: IURLDeleteParams = {
-        type: ETypes.CATEGORY,
-        pk: extractIdFromDynamoDBKey(PK),
+        pk,
+        sk,
       };
 
       await deleteItems(urlDeleteParam);
       toast.success('Category removed');
-      onRefetch();
+      await queryClient.refetchQueries({ queryKey: [etype] });
+      await queryClient.invalidateQueries({
+        queryKey: ['categories_selector'],
+      });
     } catch (error) {
       console.debug('Error while deleting: ', error);
       toast.error('Error while deleting. Try later');
@@ -103,7 +101,8 @@ const CategoryComp = (props: TProps) => {
   };
 
   const handleSetUpdateCategory = () => {
-    editCategory(category);
+    onSelCat(category);
+    setIsUpdating(true);
   };
 
   useEffect(() => {
@@ -122,7 +121,7 @@ const CategoryComp = (props: TProps) => {
         onAccept={handleDelete}
       />
       <ListItem
-        key={PK}
+        key={pk}
         ref={ref}
         secondaryAction={
           isMobile ? (
@@ -148,7 +147,7 @@ const CategoryComp = (props: TProps) => {
                 arrow
               >
                 <Switch
-                  id={`switch-hidden-${PK}`}
+                  id={`switch-hidden-${sk}`}
                   checked={checked}
                   onChange={handleOnChangeChecked}
                 />
@@ -185,14 +184,18 @@ const CategoryComp = (props: TProps) => {
           )
         }
       >
-        <ListItemAvatar>
-          <Avatar>
-            <MuiIconRender iconName={icon} />
-          </Avatar>
-        </ListItemAvatar>
+        {pk === ETypes.CATEGORY && (
+          <ListItemAvatar>
+            <Avatar>
+              <MuiIconRender iconName={icon} />
+            </Avatar>
+          </ListItemAvatar>
+        )}
         <ListItemText
-          primary={category_name}
-          secondary={category_desc}
+          primary={itemName}
+          secondary={itemDesc}
+          // primary={type === ETypes.CATEGORY ? category_name : subcategory_name}
+          // secondary={type === ETypes.CATEGORY ? category_desc : subcategory_desc}
         />
       </ListItem>
       <Collapse

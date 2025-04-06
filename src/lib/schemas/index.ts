@@ -1,8 +1,8 @@
 import Joi from 'joi';
+import { ETypes } from '../enums';
 
 type TCategorySchema = {
-  category: string;
-  category_desc: string;
+  [index: string]: string;
 };
 
 // export const categorySchema = Joi.object<TCategorySchema>({
@@ -20,12 +20,9 @@ type TCategorySchema = {
 //   }),
 // });
 
-export function customeSchema(
-  schemaType: 'category' | 'subcategory',
-): Joi.Schema<TCategorySchema> {
-  const fieldDescription = schemaType + '_desc';
+export function customeSchema(schemaType: ETypes): Joi.Schema<TCategorySchema> {
   return Joi.object<TCategorySchema>({
-    [schemaType]: Joi.string()
+    itemName: Joi.string()
       .min(3)
       .max(30)
       .required()
@@ -34,7 +31,7 @@ export function customeSchema(
         'string.max': `${schemaType.charAt(0).toUpperCase() + schemaType.slice(1)} length must be between 3 and 30 characters`,
         'string.empty': `${schemaType.charAt(0).toUpperCase() + schemaType.slice(1)} is not allowed to be empty`,
       }),
-    [fieldDescription]: Joi.string().min(3).max(50).required().messages({
+    itemDesc: Joi.string().min(3).max(50).required().messages({
       'string.min':
         'Description length must be equal to or greater than 3 characters.',
       'string.max': 'Description length must be between 3 and 50 characters',

@@ -6,7 +6,11 @@ export const urlParamsFromObject = (obj: object): string => {
   const cleanParams = new URLSearchParams();
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
-      cleanParams.append(key, value);
+      if (key === 'lastEvaluatedKey') {
+        cleanParams.append(key, JSON.stringify(value));
+      } else {
+        cleanParams.append(key, value);
+      }
     }
   }
   return cleanParams.toString();

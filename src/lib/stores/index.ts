@@ -2,26 +2,25 @@ import { create } from 'zustand';
 import { ICategory } from '../interfaces';
 
 interface ICategoryStore {
-  editedCategory: Partial<ICategory> | null;
-  selectedCategory: Partial<ICategory> | null;
+  selCat: Partial<ICategory> | null;
+  selAutocomplete: Partial<ICategory> | null;
   categories: ICategory[];
-  sRefetch: VoidFunction;
-  onEdit: (editCategory: Partial<ICategory> | null) => void;
-  onSelect: (selectCategory: Partial<ICategory> | null) => void;
-  // onRefetch: () => Promise<QueryObserverResult<InfiniteData<IPaginatedResult<ICategory>, unknown>,Error>>;
-  onRefetch: (refetch: VoidFunction) => void;
+  isUpdating: boolean;
+  onSelCat: (cat: Partial<ICategory> | null) => void;
+  onSelAutocomplete: (subc: Partial<ICategory> | null) => void;
+  setIsUpdating: (updating: boolean) => void;
   setCategories: (items: ICategory[]) => void;
 }
 
 export const useCategoryStore = create<ICategoryStore>((set) => ({
-  editedCategory: null,
-  selectedCategory: null,
+  selCat: null,
+  selAutocomplete: null,
   categories: [],
-  sRefetch: () => undefined,
-  onEdit: (editCategory: Partial<ICategory> | null) =>
-    set({ editedCategory: editCategory }),
-  onSelect: (selectCategory: Partial<ICategory> | null) =>
-    set({ selectedCategory: selectCategory }),
+  isUpdating: false,
+  itemsTotaInDB: 0,
+  onSelCat: (item: Partial<ICategory> | null) => set({ selCat: item }),
+  onSelAutocomplete: (item: Partial<ICategory> | null) =>
+    set({ selAutocomplete: item }),
+  setIsUpdating: (updating: boolean) => set({ isUpdating: updating }),
   setCategories: (items: ICategory[]) => set({ categories: items }),
-  onRefetch: (refetch: VoidFunction) => set({ sRefetch: refetch }),
 }));
