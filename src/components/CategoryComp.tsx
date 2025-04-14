@@ -1,11 +1,7 @@
 'use client';
 import { deleteItems, updateItem } from '@/lib/apis/db';
 import useResponsive from '@/lib/hooks/useResponsive';
-import {
-  ICategory,
-  // IPaginatedResult,
-  IURLDeleteParams,
-} from '@/lib/interfaces';
+import { ICategory, IURLDeleteParams } from '@/lib/interfaces';
 import { useCategoryStore } from '@/lib/stores';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -24,12 +20,11 @@ import {
   Switch,
   Tooltip,
 } from '@mui/material';
-// import { InfiniteData, QueryObserverResult } from '@tanstack/react-query';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useShallow } from 'zustand/react/shallow';
-import MuiIconRender from '../common/MuiIconRender';
-import ConfirmationDialog from '../common/Snackbar';
+import MuiIconRender from './common/MuiIconRender';
+import ConfirmationDialog from './common/Snackbar';
 import { ETypes } from '@/lib/enums';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -46,10 +41,10 @@ const CategoryComp = (props: TProps) => {
   const [checked, setChecked] = useState(hidden);
   const [open, setOpen] = useState(false);
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
-  const { onSelCat, setIsUpdating } = useCategoryStore(
+  const { setItemForEdit, setIsUpdating } = useCategoryStore(
     useShallow((state) => ({
       setIsUpdating: state.setIsUpdating,
-      onSelCat: state.onSelCat,
+      setItemForEdit: state.setItemForEdit,
     })),
   );
   const queryClient = useQueryClient();
@@ -101,7 +96,7 @@ const CategoryComp = (props: TProps) => {
   };
 
   const handleSetUpdateCategory = () => {
-    onSelCat(category);
+    setItemForEdit(category);
     setIsUpdating(true);
   };
 
@@ -198,27 +193,29 @@ const CategoryComp = (props: TProps) => {
           // secondary={type === ETypes.CATEGORY ? category_desc : subcategory_desc}
         />
       </ListItem>
-      <Collapse
-        in={open}
-        timeout="auto"
-        unmountOnExit
-      >
-        <List
-          component="div"
-          disablePadding
+      {isMobile && (
+        <Collapse
+          in={open}
+          timeout="auto"
+          unmountOnExit
         >
-          <ListItem sx={{ pl: 4 }}>
-            <Switch checked={false} />
-            <Button startIcon={<EditIcon />}>Edit</Button>
-            <Button
-              startIcon={<DeleteIcon />}
-              onClick={handleConfirmDelete}
-            >
-              Delete
-            </Button>
-          </ListItem>
-        </List>
-      </Collapse>
+          <List
+            component="div"
+            disablePadding
+          >
+            <ListItem sx={{ pl: 4 }}>
+              <Switch checked={false} />
+              <Button startIcon={<EditIcon />}>Edit</Button>
+              <Button
+                startIcon={<DeleteIcon />}
+                onClick={handleConfirmDelete}
+              >
+                Delete
+              </Button>
+            </ListItem>
+          </List>
+        </Collapse>
+      )}
     </>
   );
 };

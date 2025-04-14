@@ -1,19 +1,30 @@
 import { urlParamsFromObject } from '@/utils';
 import {
-  ICategory,
+  ICategoryCounter,
   IPageParams,
   IPaginatedResult,
   IURLDeleteParams,
 } from '../interfaces';
 import AxiosWrapper from '../wrappers/AxiosWrapper';
+import { ETypes } from '../enums';
 
-export const getItems = async (
+export const getItems = async <T>(
   urlParams: IPageParams,
-): Promise<IPaginatedResult<ICategory>> => {
+): Promise<IPaginatedResult<T>> => {
   const parsedUrl = urlParamsFromObject(urlParams);
-  const resp = await AxiosWrapper.getInstance().get<
-    IPaginatedResult<ICategory>
-  >(`/items?${parsedUrl}`);
+  const resp = await AxiosWrapper.getInstance().get<IPaginatedResult<T>>(
+    `/items?${parsedUrl}`,
+  );
+  return resp.data;
+};
+
+export const getTotalsByType = async (
+  etype: ETypes,
+): Promise<ICategoryCounter> => {
+  const resp = await AxiosWrapper.getInstance().get<ICategoryCounter>(
+    `/totals?pk=${etype}`,
+  );
+  console.log('responmse: ', resp.data);
   return resp.data;
 };
 

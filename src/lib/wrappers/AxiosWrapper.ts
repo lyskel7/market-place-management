@@ -101,7 +101,6 @@ class AxiosWrapper {
     params?: Record<string, unknown>,
   ): Promise<R> {
     const resp = await AxiosWrapper.instance.get(url, { params });
-    console.log('resp::', resp.data);
     return resp.data;
   }
 
