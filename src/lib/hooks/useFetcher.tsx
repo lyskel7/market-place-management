@@ -1,16 +1,27 @@
-// import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  QueryKey,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import { getItems } from '../apis/db';
 import { SCAN_LIMIT } from '../constants/frontend';
-import { IPageParams } from '../interfaces';
-// import { useShallow } from 'zustand/react/shallow';
-// import { useCategoryStore } from '../stores';
+import { IPageParams, IPaginatedResult } from '../interfaces';
 
-const useFetcher = (
-  initialPageParam: IPageParams,
-  queryKey: string,
-  enabled: boolean,
-) => {
+export type FetchFn<T> = (params: IPageParams) => Promise<IPaginatedResult<T>>;
+
+interface IUseFetcherProps<T> {
+  initialPageParam: IPageParams; // Initial params for first page
+  queryKey: QueryKey; // QueryKey key type
+  fetchFn?: FetchFn<T>; // Specific function to get generic data T
+  enabled?: boolean; // Controlling if query run automatically
+  staleTime?: number; // Time before data are "stale"
+}
+
+function useFetcher<T>({
+  initialPageParam,
+  queryKey,
+  enabled,
+}: IUseFetcherProps<T>) {
   console.log('querykey: ', queryKey);
   const {
     data,
@@ -21,14 +32,20 @@ const useFetcher = (
     error,
     isError,
     refetch,
-  } = useInfiniteQuery({
-    queryKey: [queryKey],
+  } = useInfiniteQuery<
+    IPaginatedResult<T>, // TQueryFnData: Lo que devuelve tu queryFn
+    Error, // TError: Tipo del error
+    InfiniteData<IPaginatedResult<T>>, // TData: Tipo de cada página individual en 'data.pages'
+    QueryKey, // TQueryKey
+    IPageParams // TPageParam: Tipo de pageParam
+  >({
+    queryKey,
     queryFn: async ({ pageParam = initialPageParam }) => {
-      const result = await getItems(pageParam);
+      const result = await getItems<T>(pageParam);
 
-      console.log('se ejecuto', pageParam);
-      console.log('se ejecuto', result);
-      console.log('se ejecuto', queryKey);
+      // console.log('se ejecuto', pageParam);
+      // console.log('se ejecuto', result);
+      // console.log('se ejecuto', queryKey);
       return result;
     },
     getNextPageParam: (lastPage) => {
@@ -51,14 +68,14 @@ const useFetcher = (
   });
 
   //Flatting the object and getting just items
-  const items = data?.pages.flatMap((page) => page.items) || [];
+  const items = data?.pages.flatMap((page) => page.items) ?? [];
 
-  const itemsSort = () => {
-    return items.sort((a, b) => a.itemName.localeCompare(b.itemName));
-  };
+  // const itemsSort = () => {
+  //   return items.sort((a, b) => a.itemName.localeCompare(b.itemName));
+  // };
 
   return {
-    items: itemsSort(),
+    items,
     isLoading,
     fetchNextPage,
     hasNextPage,
@@ -67,6 +84,6 @@ const useFetcher = (
     isError,
     refetch,
   };
-};
+}
 
 export default useFetcher;

@@ -1,5 +1,6 @@
-import CategoriesComp from '@/components/categories/CategoriesComp';
-import CategoryForm from '@/components/categories/CategoryForm';
+'use client';
+import CategoriesComp from '@/components/CategoriesComp';
+import CategoryForm from '@/components/CategoryForm';
 import { Stack } from '@mui/material';
 import { ETypes } from '@/lib/enums';
 

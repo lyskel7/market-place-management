@@ -44,8 +44,13 @@ export interface IPageParams {
 
 export interface ICreateItemParam {
   item: Partial<ICategory>;
-  first: boolean;
+  // first: boolean;
   etype: ETypes;
+}
+
+export interface ICategoryCounter {
+  pk: string;
+  count: number;
 }
 
 export interface IURLDeleteParams {

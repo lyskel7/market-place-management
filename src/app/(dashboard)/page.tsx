@@ -1,7 +1,7 @@
-import { Typography } from '@mui/material';
+import DashboardComp from '@/components/DashboardComp';
 
 const DashboardPage = () => {
-  return <Typography>Welcome</Typography>;
+  return <DashboardComp />;
 };
 
 export default DashboardPage;

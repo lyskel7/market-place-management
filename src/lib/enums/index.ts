@@ -11,6 +11,12 @@ export enum Versions {
 export enum ETypes {
   CATEGORY = 'category',
   SUBCATEGORY = 'subcategory',
+  VARIATIONS = 'variations',
   POST = 'post',
   PROFILE = 'profile',
+}
+
+export enum EVarAttr {
+  ATTRIBUTE = 'attributes',
+  VARIATION = 'variations',
 }

@@ -1,5 +1,5 @@
 'use client';
-import { ICategory } from '@/lib/interfaces';
+import { ICategory, IPageParams } from '@/lib/interfaces';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { SyntheticEvent, useEffect, useState } from 'react';
@@ -11,26 +11,29 @@ import { SCAN_LIMIT } from '@/lib/constants/frontend';
 import useFetcher from '@/lib/hooks/useFetcher';
 import { useQueryClient } from '@tanstack/react-query';
 
-const CategoriesAutocomplete = () => {
+const CategoriesAutocomplete = ({ etype }: { etype: ETypes }) => {
   const queryClient = useQueryClient();
   const { isMobile } = useResponsive();
   const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(
     null,
   );
 
-  const { items } = useFetcher(
-    {
-      pk: ETypes.CATEGORY,
-      limit: SCAN_LIMIT,
-      lastEvaluatedKey: undefined,
-    },
-    'categories_selector',
-    true,
-  );
+  const initialPageParam: IPageParams = {
+    pk: ETypes.CATEGORY,
+    limit: SCAN_LIMIT,
+    lastEvaluatedKey: undefined,
+  };
 
-  const { onSelAutocomplete } = useCategoryStore(
+  const { items } = useFetcher<ICategory>({
+    initialPageParam,
+    queryKey: ['categories_selector'],
+    enabled: true,
+  });
+
+  const { setCatAutocomplete, setSelSubc } = useCategoryStore(
     useShallow((state) => ({
-      onSelAutocomplete: state.onSelAutocomplete,
+      setCatAutocomplete: state.setCatAutocomplete,
+      setSelSubc: state.setSelSubc,
     })),
   );
 
@@ -43,14 +46,15 @@ const CategoriesAutocomplete = () => {
     newValue: ICategory | null,
   ) => {
     setSelectedCategory(newValue);
-    onSelAutocomplete(newValue);
-    queryClient.removeQueries({ queryKey: [ETypes.SUBCATEGORY] });
-    queryClient.refetchQueries({ queryKey: [ETypes.SUBCATEGORY] });
+    setCatAutocomplete(newValue);
+    queryClient.removeQueries({ queryKey: [etype] });
+    queryClient.refetchQueries({ queryKey: [etype] });
   };
 
   useEffect(() => {
-    if (!selectedCategory) onSelAutocomplete(null);
-  }, [selectedCategory, onSelAutocomplete]);
+    if (!selectedCategory) setCatAutocomplete(null);
+    setSelSubc(null);
+  }, [selectedCategory, setCatAutocomplete, setSelSubc]);
 
   return (
     <Autocomplete

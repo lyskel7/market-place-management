@@ -1,5 +1,5 @@
-const StatsPage = () => {
-  return <div>StatsPage</div>;
-};
+import PostGraph from '@/components/graphics/PostGraph';
+
+const StatsPage = () => <PostGraph />;
 
 export default StatsPage;

@@ -20,8 +20,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { v4 } from 'uuid';
 import { useShallow } from 'zustand/react/shallow';
-import MuiIconDialog from '../common/MuiIconDialog';
-import MuiIconRender from '../common/MuiIconRender';
+import MuiIconDialog from './common/MuiIconDialog';
+import MuiIconRender from './common/MuiIconRender';
 import { ETypes } from '@/lib/enums';
 import { createItem, updateItem } from '@/lib/apis/db';
 import { useQueryClient } from '@tanstack/react-query';
@@ -29,23 +29,22 @@ import { useQueryClient } from '@tanstack/react-query';
 const CategoryForm = ({ etype }: { etype: ETypes }) => {
   const { isMobile } = useResponsive();
   const {
-    selCat,
-    categories,
-    selAutocomplete,
+    itemForEdit,
+    listedItems,
+    catAutocomplete,
     isUpdating,
     setIsUpdating,
-    onSelCat,
-    onSelAutocomplete,
+    setItemForEdit,
+    setCatAutocomplete,
   } = useCategoryStore(
     useShallow((state) => ({
-      selCat: state.selCat,
-      selAutocomplete: state.selAutocomplete,
-      categories: state.categories,
+      itemForEdit: state.itemForEdit,
+      catAutocomplete: state.catAutocomplete,
+      listedItems: state.listedItems,
       isUpdating: state.isUpdating,
-      onSelAutocomplete: state.onSelAutocomplete,
+      setCatAutocomplete: state.setCatAutocomplete,
       setIsUpdating: state.setIsUpdating,
-      onSelCat: state.onSelCat,
-      setItemsTotalInDB: state.setItemsTotalInDB,
+      setItemForEdit: state.setItemForEdit,
     })),
   );
   const [openIcons, setOpenIcons] = useState(false);
@@ -64,9 +63,9 @@ const CategoryForm = ({ etype }: { etype: ETypes }) => {
   const handleFormReset = useCallback(() => {
     reset();
     setSelectedIcon('Apps');
-    onSelCat(null);
+    setItemForEdit(null);
     setIsUpdating(false);
-  }, [onSelCat, reset, setIsUpdating]);
+  }, [setItemForEdit, reset, setIsUpdating]);
 
   const handleOpenIcons = () => {
     setOpenIcons(true);
@@ -80,15 +79,15 @@ const CategoryForm = ({ etype }: { etype: ETypes }) => {
     let existElement = false;
     let selectedElement = '';
 
-    if (!categories?.length) return false;
+    if (!listedItems?.length) return false;
 
     switch (etype) {
       case ETypes.CATEGORY:
       case ETypes.SUBCATEGORY:
-        existElement = categories.some(
-          (cat) => cat?.itemName?.toLowerCase() === element.toLowerCase(),
+        existElement = listedItems.some(
+          (item) => item?.itemName?.toLowerCase() === element.toLowerCase(),
         );
-        selectedElement = selCat?.itemName || '';
+        selectedElement = itemForEdit?.itemName || '';
         break;
       default:
         break;
@@ -104,19 +103,19 @@ const CategoryForm = ({ etype }: { etype: ETypes }) => {
     const justNow = new Date().toISOString();
 
     const createSKForCategory = () => {
-      if (isUpdating && selCat) {
-        return selCat?.sk;
+      if (isUpdating && itemForEdit) {
+        return itemForEdit?.sk;
       }
 
-      if (etype === ETypes.SUBCATEGORY && selAutocomplete) {
-        return selAutocomplete.sk + '_' + v4();
+      if (etype === ETypes.SUBCATEGORY && catAutocomplete) {
+        return catAutocomplete.sk + '_' + v4();
       }
 
       return v4();
     };
 
     const conformed: Partial<ICategory> = {
-      pk: etype || selCat?.pk,
+      pk: etype || itemForEdit?.pk,
       sk: createSKForCategory(),
       itemName: pData.itemName,
       itemDesc: pData.itemDesc,
@@ -124,18 +123,15 @@ const CategoryForm = ({ etype }: { etype: ETypes }) => {
       updated: justNow,
       ...(etype === ETypes.SUBCATEGORY ? {} : { icon: selectedIcon }),
       ...(etype === ETypes.CATEGORY
-        ? { subItemsCount: selCat?.subItemsCount || 0 }
+        ? { subItemsCount: itemForEdit?.subItemsCount || 0 }
         : {}),
-      hidden: selCat?.hidden || false,
+      hidden: itemForEdit?.hidden || false,
     };
-    console.log('conformed: ', conformed);
-    console.log('selcat: ', selCat);
     return conformed;
   };
 
   const handleOnSubmit = handleSubmit(async (data) => {
-    console.log('subumit', data);
-    if (etype === ETypes.SUBCATEGORY && !selAutocomplete) {
+    if (etype === ETypes.SUBCATEGORY && !catAutocomplete) {
       toast.warning('Select a category');
       return;
     }
@@ -154,21 +150,18 @@ const CategoryForm = ({ etype }: { etype: ETypes }) => {
       const conformedItem = conformedCategory(data);
       if (isUpdating) {
         await updateItem(conformedItem);
-        console.log('conformedItem: ', conformedItem);
 
         setIsUpdating(false);
       } else {
         const createItemParam: ICreateItemParam = {
           item: conformedItem,
-          first: !categories.length,
           etype,
         };
         await createItem(createItemParam);
-        console.log('createItem: ', createItemParam);
       }
 
       toast.success(
-        `${etype.charAt(0).toUpperCase()}${etype.slice(1)} ${selCat ? 'updated' : 'created'} successfully`,
+        `${etype.charAt(0).toUpperCase()}${etype.slice(1)} ${itemForEdit ? 'updated' : 'created'} successfully`,
       );
       handleFormReset();
       await queryClient.refetchQueries({ queryKey: [etype] });
@@ -177,31 +170,33 @@ const CategoryForm = ({ etype }: { etype: ETypes }) => {
       });
     } catch (error) {
       console.debug(
-        `Category could not be ${selCat ? 'updated' : 'created'}`,
+        `Category could not be ${itemForEdit ? 'updated' : 'created'}`,
         error,
       );
-      toast.error(`Category could not be ${selCat ? 'updated' : 'inserted'}`);
+      toast.error(
+        `Category could not be ${itemForEdit ? 'updated' : 'inserted'}`,
+      );
     }
   });
 
   useEffect(() => {
-    if (selCat) {
-      setValue('itemName', selCat.itemName);
-      setValue('itemDesc', selCat.itemDesc);
-      setSelectedIcon(selCat.icon || 'Apps');
+    if (itemForEdit) {
+      setValue('itemName', itemForEdit.itemName);
+      setValue('itemDesc', itemForEdit.itemDesc);
+      setSelectedIcon(itemForEdit.icon || 'Apps');
     } else {
       setValue('itemName', '');
       setValue('itemDesc', '');
       setSelectedIcon('Apps');
     }
-  }, [selCat, setValue, setSelectedIcon, etype]);
+  }, [itemForEdit, setValue, setSelectedIcon, etype]);
 
   useEffect(() => {
     return () => {
       handleFormReset();
-      onSelAutocomplete(null);
+      setCatAutocomplete(null);
     };
-  }, [handleFormReset, onSelAutocomplete]);
+  }, [handleFormReset, setCatAutocomplete]);
 
   // useEffect(() => {
   //   console.log('Form Errors:', errors);

@@ -11,6 +11,7 @@ import theme from '@/styles/theme';
 import { ReactNode, Suspense } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ReactQueryProviders from '@/lib/provider/reactqueryProvider';
+import FormatShapesIcon from '@mui/icons-material/FormatShapes';
 
 const NAVIGATION: Navigation = [
   {
@@ -39,6 +40,11 @@ const NAVIGATION: Navigation = [
     segment: 'variations',
     title: 'Variations',
     icon: <WysiwygIcon />,
+  },
+  {
+    segment: 'attributes',
+    title: 'Attributes',
+    icon: <FormatShapesIcon />,
   },
   {
     kind: 'divider',
