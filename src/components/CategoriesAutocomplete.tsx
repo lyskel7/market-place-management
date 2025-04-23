@@ -4,7 +4,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useCategoryStore } from '@/lib/stores';
+import { useCategoryStore } from '@/lib/stores/categoryStore';
 import useResponsive from '@/lib/hooks/useResponsive';
 import { ETypes } from '@/lib/enums';
 import { SCAN_LIMIT } from '@/lib/constants/frontend';

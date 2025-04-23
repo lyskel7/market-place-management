@@ -1,39 +1,29 @@
 'use client';
-import { ETypes } from '@/lib/enums';
-import useFetcherTotal from '@/lib/hooks/useFetcherTotal';
 import * as MuiIcons from '@mui/icons-material';
 import {
   Card,
   CardContent,
   CardHeader,
   IconButton,
-  LinearProgress,
   Typography,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import MuiIconRender from './MuiIconRender';
-import { useEffect } from 'react';
 
 type TProps = {
   goto: string;
   title: string;
   body: string;
   iconName: keyof typeof MuiIcons;
-  etype: ETypes;
+  count: number;
 };
+
 const DashboardCard = (props: TProps) => {
-  const { goto, etype, title, body, iconName } = props;
+  const { goto, title, body, iconName, count } = props;
   const router = useRouter();
 
-  const { count, refetch, isLoading } = useFetcherTotal(etype);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
   return (
-    <Card sx={{ maxWidth: 345, borderRadius: 3, height: 150 }}>
-      {isLoading && <LinearProgress />}
+    <Card sx={{ width: 345, borderRadius: 3, height: 150 }}>
       <CardHeader
         action={
           <IconButton
@@ -44,14 +34,20 @@ const DashboardCard = (props: TProps) => {
           </IconButton>
         }
         title={title}
-        subheader={
-          <Typography variant="caption">Total: {count ?? 0}</Typography>
-        }
+        subheader={<Typography variant="caption">Total: {count}</Typography>}
+        sx={{ pb: 0 }}
       />
       <CardContent>
         <Typography
           variant="body2"
-          sx={{ color: 'text.secondary' }}
+          sx={{
+            color: 'text.secondary',
+            overflow: 'auto',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: '2',
+          }}
         >
           {body}
         </Typography>

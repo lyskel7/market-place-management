@@ -1,5 +1,6 @@
 import * as MuiIcons from '@mui/icons-material';
 import { ETypes } from '../enums';
+import type { AuthSession, SignInOutput } from 'aws-amplify/auth';
 
 export interface ISingleTable {
   pk: string;
@@ -30,9 +31,10 @@ export type IPaginatedResult<T> = {
   lastEvaluatedKey: Record<string, string> | undefined;
 };
 
-export interface IBooleanResponse {
+export interface IBooleanResponse<T> {
   success: boolean;
   error?: string;
+  result: T;
 }
 
 export interface IPageParams {
@@ -44,7 +46,6 @@ export interface IPageParams {
 
 export interface ICreateItemParam {
   item: Partial<ICategory>;
-  // first: boolean;
   etype: ETypes;
 }
 
@@ -58,6 +59,23 @@ export interface IURLDeleteParams {
   sk: string;
 }
 
+export interface IUser {
+  email: string;
+  password: string;
+}
+
+export interface IApiResponse<T = unknown> {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  internalData: T | null;
+  error?: string;
+}
+
+export type IApiResponseAuthData = {
+  signInOutput: SignInOutput;
+  session: AuthSession | null;
+};
 // export type TPageParams = {
 //   type: ETypes;
 //   limit: number;

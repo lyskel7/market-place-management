@@ -1,38 +1,40 @@
-import { urlParamsFromObject } from '@/utils';
-import {
+import { urlParamsFromObject } from '@/utils/general';
+import type {
+  IApiResponse,
   ICategoryCounter,
   IPageParams,
   IPaginatedResult,
   IURLDeleteParams,
 } from '../interfaces';
 import AxiosWrapper from '../wrappers/AxiosWrapper';
-import { ETypes } from '../enums';
 
 export const getItems = async <T>(
   urlParams: IPageParams,
-): Promise<IPaginatedResult<T>> => {
+): Promise<IApiResponse<IPaginatedResult<T>>> => {
   const parsedUrl = urlParamsFromObject(urlParams);
   const resp = await AxiosWrapper.getInstance().get<IPaginatedResult<T>>(
     `/items?${parsedUrl}`,
   );
-  return resp.data;
+  return resp;
 };
 
-export const getTotalsByType = async (
-  etype: ETypes,
-): Promise<ICategoryCounter> => {
-  const resp = await AxiosWrapper.getInstance().get<ICategoryCounter>(
-    `/totals?pk=${etype}`,
-  );
-  console.log('responmse: ', resp.data);
-  return resp.data;
+export const getTotals = async (): Promise<
+  IApiResponse<ICategoryCounter[]>
+> => {
+  const resp =
+    await AxiosWrapper.getInstance().get<ICategoryCounter[]>('/totals');
+  console.log('responmse: ', resp);
+  return resp;
 };
 
-export const createItem = async <T>(createItemParam: T): Promise<boolean> => {
-  return await AxiosWrapper.getInstance().post<T>(
+export const createItem = async <T>(
+  createItemParam: T,
+): Promise<IApiResponse> => {
+  const resp = await AxiosWrapper.getInstance().post<T>(
     '/items/create',
     createItemParam,
   );
+  return resp;
 };
 
 export const updateItem = async <T>(item: T): Promise<boolean> => {

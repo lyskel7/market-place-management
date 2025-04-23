@@ -20,3 +20,9 @@ export enum EVarAttr {
   ATTRIBUTE = 'attributes',
   VARIATION = 'variations',
 }
+
+export enum ERoles {
+  SUPERDADMINS = 'superadmins',
+  MANAGERS = 'managers',
+  VIEWERS = 'viewers',
+}

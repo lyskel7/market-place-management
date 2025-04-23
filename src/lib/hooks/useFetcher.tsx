@@ -41,12 +41,13 @@ function useFetcher<T>({
   >({
     queryKey,
     queryFn: async ({ pageParam = initialPageParam }) => {
-      const result = await getItems<T>(pageParam);
+      const { internalData } = await getItems<T>(pageParam);
 
-      // console.log('se ejecuto', pageParam);
-      // console.log('se ejecuto', result);
-      // console.log('se ejecuto', queryKey);
-      return result;
+      if (!internalData) {
+        throw new Error('Failed to fetch data: internalData is null');
+      }
+
+      return internalData;
     },
     getNextPageParam: (lastPage) => {
       if (!lastPage || !lastPage.lastEvaluatedKey) {
