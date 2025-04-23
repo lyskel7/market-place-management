@@ -1,17 +1,16 @@
 import { EXTERNAL_BASE_URL } from '@/lib/constants/backend';
 import { ICategoryCounter } from '@/lib/interfaces';
+import { errorResponse, successResponse } from '@/utils/apiResponses';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   let errorMessage: string;
   let statusCode = 500; //default error
   try {
-    const params = req.nextUrl.searchParams;
-    const response: AxiosResponse<ICategoryCounter | null> = await axios.get(
-      `${EXTERNAL_BASE_URL}/totals?${params.toString()}`,
+    const response: AxiosResponse<ICategoryCounter[]> = await axios.get(
+      `${EXTERNAL_BASE_URL}/totals`,
     );
-    return NextResponse.json(response.data);
+    return successResponse(response.data, 'Totals fetched successfully', 200);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
@@ -29,15 +28,6 @@ export async function GET(req: NextRequest) {
     } else {
       errorMessage = `Unknown error: ${error}`;
     }
-
-    return NextResponse.json(
-      { error: errorMessage },
-      {
-        status: statusCode,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    return errorResponse(errorMessage, statusCode);
   }
 }

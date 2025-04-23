@@ -1,7 +1,7 @@
 import { ETypes, EVarAttr } from '@/lib/enums';
 import useUpdateVarAttr from '@/lib/hooks/useUpdateVarAttr';
 import { ICategory } from '@/lib/interfaces';
-import { useCategoryStore } from '@/lib/stores';
+import { useCategoryStore } from '@/lib/stores/categoryStore';
 import { Button, Stack, TextField, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { toast } from 'react-toastify';

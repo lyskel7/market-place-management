@@ -2,7 +2,7 @@
 import { SCAN_LIMIT } from '@/lib/constants/frontend';
 import { ETypes } from '@/lib/enums';
 import useFetcher from '@/lib/hooks/useFetcher';
-import { useCategoryStore } from '@/lib/stores';
+import { useCategoryStore } from '@/lib/stores/categoryStore';
 import ReplayIcon from '@mui/icons-material/Replay';
 import {
   Box,

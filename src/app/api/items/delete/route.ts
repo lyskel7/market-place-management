@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function DELETE(req: NextRequest) {
   try {
     const params = req.nextUrl.searchParams;
-    const response: AxiosResponse<IBooleanResponse> = await axios.delete(
+    const response: AxiosResponse<IBooleanResponse<never>> = await axios.delete(
       `${EXTERNAL_BASE_URL}/delete?${params.toString()}`,
     );
 

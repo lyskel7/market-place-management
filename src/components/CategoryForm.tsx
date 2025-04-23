@@ -14,7 +14,7 @@ import {
 import { FieldValues, useForm } from 'react-hook-form';
 import { ICategory, ICreateItemParam } from '@/lib/interfaces';
 import { customeSchema } from '@/lib/schemas';
-import { useCategoryStore } from '@/lib/stores';
+import { useCategoryStore } from '@/lib/stores/categoryStore';
 import * as MuiIcons from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';

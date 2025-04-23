@@ -2,7 +2,7 @@
 import { deleteItems, updateItem } from '@/lib/apis/db';
 import useResponsive from '@/lib/hooks/useResponsive';
 import { ICategory, IURLDeleteParams } from '@/lib/interfaces';
-import { useCategoryStore } from '@/lib/stores';
+import { useCategoryStore } from '@/lib/stores/categoryStore';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandLess from '@mui/icons-material/ExpandLess';

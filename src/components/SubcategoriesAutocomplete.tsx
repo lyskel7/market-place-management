@@ -4,7 +4,7 @@ import { ETypes } from '@/lib/enums';
 import useFetcher from '@/lib/hooks/useFetcher';
 import useResponsive from '@/lib/hooks/useResponsive';
 import { ICategory, IPageParams } from '@/lib/interfaces';
-import { useCategoryStore } from '@/lib/stores';
+import { useCategoryStore } from '@/lib/stores/categoryStore';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { SyntheticEvent, useEffect, useState } from 'react';

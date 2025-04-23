@@ -3,7 +3,7 @@ import CategoriesAutocomplete from '@/components/CategoriesAutocomplete';
 import SubcategoriesAutocomplete from '@/components/SubcategoriesAutocomplete';
 import { ETypes, EVarAttr } from '@/lib/enums';
 import useResponsive from '@/lib/hooks/useResponsive';
-import { useCategoryStore } from '@/lib/stores';
+import { useCategoryStore } from '@/lib/stores/categoryStore';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, List, ListItem, ListItemText, Stack } from '@mui/material';
 import { useEffect } from 'react';

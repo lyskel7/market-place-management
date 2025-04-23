@@ -1,26 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
-import { getTotalsByType } from '../apis/db';
-import { ETypes } from '../enums';
+import { getTotals } from '../apis/db';
 import { ICategoryCounter } from '../interfaces';
 
-type TotalsQueryKey = [`${ETypes}_totals`, ETypes];
+type TotalsQueryKey = [string];
 
-const useFetcherTotal = (eType: ETypes) => {
+const useFetcherTotal = () => {
   const { data, isError, isLoading, refetch } = useQuery<
-    ICategoryCounter,
+    ICategoryCounter[],
     Error,
-    ICategoryCounter,
+    ICategoryCounter[],
     TotalsQueryKey
   >({
-    queryKey: [`${eType}_totals`, eType],
-    queryFn: async ({ queryKey }) => await getTotalsByType(queryKey[1]),
+    queryKey: ['Fetcher_totals'],
+    queryFn: async () => {
+      const response = await getTotals();
+      console.log('internalData: ', response);
+      if (!response.internalData) {
+        throw new Error('Failed to fetch data: internalData is null');
+      }
+      // console.log('internalData: ', internalData);
+      return response.internalData;
+    },
     staleTime: 120000,
   });
 
-  const count = data?.count;
-
   return {
-    count,
+    data: data || [],
     isLoading,
     isError,
     refetch,

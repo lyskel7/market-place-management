@@ -7,7 +7,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const requestData = await req.json();
     console.log('requestdata', requestData);
-    const response: AxiosResponse<IBooleanResponse> = await axios.patch(
+    const response: AxiosResponse<IBooleanResponse<never>> = await axios.patch(
       `${EXTERNAL_BASE_URL}/update`,
       requestData,
     );
