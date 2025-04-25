@@ -12,7 +12,6 @@ import {
   Backdrop,
 } from '@mui/material';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -24,7 +23,7 @@ import { useHydrateAuth } from '@/lib/hooks/useHydrateAuth';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useTheme } from '@mui/material';
 
-type FormValues = {
+type TFormValues = {
   email: string;
   password: string;
 };
@@ -37,16 +36,15 @@ const SignInForm = () => {
     useState<SignInOutput | null>(null);
   const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
   const [cognitoUser, setCognitoUser] = useState('');
-  const router = useRouter();
   const { isMobile } = useResponsive();
   const theme = useTheme();
   const {
     register,
+    reset,
     handleSubmit,
-    // reset,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
+  } = useForm<TFormValues>({
     resolver: joiResolver(authSchema),
   });
 
@@ -67,23 +65,18 @@ const SignInForm = () => {
           setCognitoUserForPasswordChange(output);
           setCognitoUser(email);
           setShowNewPasswordForm(true);
-          // setIsLoading(false);
           return;
         }
 
         if (output.isSignedIn) {
           console.log('Login exitoso, llamando a hydrateAuth...');
           await hydrateAuth();
-          // if (!isLoading) {
-          //   router.push('/dashboard');
-          // }
           return;
         }
       }
     } catch (err) {
       console.error('❌ Error al iniciar sesión', err);
       toast.error((err as Error).message);
-      setValue('email', '');
       setValue('password', '');
     }
   });
@@ -103,9 +96,7 @@ const SignInForm = () => {
           setShowNewPasswordForm(false);
           setCognitoUserForPasswordChange(null);
           await signOut();
-          router.push('/auth/signin');
-          // Quizás redirigir al login o intentar login automático
-          // router.push('/auth/signin?message=PasswordChanged');
+          reset();
         }}
         onCancel={() => {
           // Come back to login when cancel

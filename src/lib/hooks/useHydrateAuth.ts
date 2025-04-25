@@ -20,7 +20,7 @@ export const useHydrateAuth = () => {
         setAuthenticated(true);
         setUserInfo({
           email: idTokenPayload?.email as string,
-          username: idTokenPayload?.name as string,
+          name: idTokenPayload?.name as string,
           groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
         });
         console.log('👌hydrato');

@@ -1,11 +1,8 @@
 'use client';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useAuthStore } from '@/lib/stores/authStore';
 
 const SplashScreen = () => {
-  const { isLoading } = useAuthStore();
-
   return (
     <Backdrop
       sx={{
@@ -14,7 +11,7 @@ const SplashScreen = () => {
         zIndex: (theme) => theme.zIndex.drawer + 1,
         transition: 'opacity 0.3s ease',
       }}
-      open={isLoading}
+      open={true}
     >
       <CircularProgress color="inherit" />
     </Backdrop>

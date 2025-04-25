@@ -76,8 +76,10 @@ export type IApiResponseAuthData = {
   signInOutput: SignInOutput;
   session: AuthSession | null;
 };
-// export type TPageParams = {
-//   type: ETypes;
-//   limit: number;
-//   lastEvaluatedKey: Record<string, string> | undefined;
-// };
+
+// profile and passwords
+export type TPasswordFormValues = {
+  newPassword: string;
+  confirmedPassword: string;
+  oldPassword?: string;
+};

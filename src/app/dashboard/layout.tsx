@@ -28,7 +28,7 @@ const Layout = (props: { children: React.ReactNode }) => {
       console.log('Dashboard Layout: Auth state updated, setting session.');
       setSession({
         user: {
-          name: userInfo.username || 'No name provided',
+          name: userInfo.name || 'No name provided',
           email: userInfo.email || 'No email provided',
           image: 'https://avatars.githubusercontent.com/u/19550456',
         },
@@ -50,7 +50,6 @@ const Layout = (props: { children: React.ReactNode }) => {
           await signOut();
           clearAuth();
           router.push('/auth/signin');
-          console.log('Bye bye!');
         } catch (error) {
           console.error('Error during sign out:', error);
           setIsSigningOut(false);

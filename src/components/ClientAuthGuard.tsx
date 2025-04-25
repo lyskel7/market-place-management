@@ -28,7 +28,7 @@ export const ClientAuthGuard = ({
       router.replace('/auth/signin');
     } else if (isAuthenticated) {
       console.log('ClientAuthGuard: Authenticated.');
-      if (pathname.startsWith('/auth')) {
+      if (pathname.startsWith('/auth') || pathname === '/') {
         console.log('ClientAuthGuard: On auth path, redirecting to dashboard.');
         router.replace('/dashboard');
       } else {
@@ -41,17 +41,19 @@ export const ClientAuthGuard = ({
     }
   }, [isAuthenticated, isLoading, pathname, router]);
 
-  const needsRedirectToLogin =
+  const willRedirectToLogin =
     !isLoading && !isAuthenticated && !pathname.startsWith('/auth');
-  const needsRedirectToDashboard =
-    !isLoading && isAuthenticated && pathname.startsWith('/auth');
+  const willRedirectToDashboard =
+    !isLoading &&
+    isAuthenticated &&
+    (pathname.startsWith('/auth') || pathname === '/');
 
   // Mostramos el SplashScreen si:
   // 1. El store está cargando (hidratando/verificando sesión).
   // 2. O si una redirección es necesaria basada en el estado actual (previene mostrar el contenido viejo brevemente).
-  if (isLoading || needsRedirectToLogin || needsRedirectToDashboard) {
+  if (isLoading || willRedirectToLogin || willRedirectToDashboard) {
     console.log(
-      `ClientAuthGuard RENDER: Needs redirect or loading. Showing SplashScreen. (isLoading: ${isLoading}, needsRedirectToLogin: ${needsRedirectToLogin}, needsRedirectToDashboard: ${needsRedirectToDashboard})`,
+      `ClientAuthGuard RENDER: Needs redirect or loading. Showing SplashScreen. (isLoading: ${isLoading}, needsRedirectToLogin: ${willRedirectToLogin}, needsRedirectToDashboard: ${willRedirectToDashboard})`,
     );
     return <SplashScreen />;
   }
