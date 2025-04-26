@@ -9,12 +9,7 @@
           "SMS"
         ],
         "passwordProtectionSettings": {
-          "passwordPolicyCharacters": [
-            "REQUIRES_LOWERCASE",
-            "REQUIRES_UPPERCASE",
-            "REQUIRES_NUMBERS",
-            "REQUIRES_SYMBOLS"
-          ],
+          "passwordPolicyCharacters": [],
           "passwordPolicyMinLength": 8
         },
         "signupAttributes": [
@@ -38,7 +33,8 @@
           "attributes": [
             "UserPoolId",
             "AppClientIDWeb",
-            "AppClientID"
+            "AppClientID",
+            "IdentityPoolId"
           ],
           "category": "auth",
           "resourceName": "marketadminpanel"
@@ -48,5 +44,12 @@
       "service": "Cognito-UserPool-Groups"
     }
   },
-  "function": {}
+  "function": {},
+  "storage": {
+    "market": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "S3"
+    }
+  }
 }

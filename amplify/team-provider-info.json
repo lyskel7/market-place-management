@@ -16,6 +16,9 @@
       "auth": {
         "marketadminpanel": {},
         "userPoolGroups": {}
+      },
+      "storage": {
+        "market": {}
       }
     }
   }

@@ -1,0 +1,12 @@
+{
+  "resourceName": "market",
+  "policyUUID": "03fb98de",
+  "bucketName": "marketadminpanel",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ]
+}

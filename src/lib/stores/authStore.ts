@@ -10,6 +10,7 @@ interface IUserInfo {
   username?: string;
   sub?: string;
   groups?: string[] | null;
+  picture?: string;
 }
 
 type AuthStore = {

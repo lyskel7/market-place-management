@@ -30,7 +30,7 @@ const Layout = (props: { children: React.ReactNode }) => {
         user: {
           name: userInfo.name || 'No name provided',
           email: userInfo.email || 'No email provided',
-          image: 'https://avatars.githubusercontent.com/u/19550456',
+          image: userInfo.picture,
         },
       });
     } else {

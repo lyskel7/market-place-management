@@ -1,5 +1,5 @@
 'use client';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useCallback } from 'react';
 
@@ -11,6 +11,7 @@ export const useHydrateAuth = () => {
     try {
       console.log('chicking before fetchsession');
       const session = await fetchAuthSession();
+      const userAttr = await fetchUserAttributes();
       const accessToken = session.tokens?.accessToken;
       console.log('session after fetchsession: ', session);
       if (accessToken) {
@@ -22,6 +23,7 @@ export const useHydrateAuth = () => {
           email: idTokenPayload?.email as string,
           name: idTokenPayload?.name as string,
           groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
+          picture: userAttr.picture,
         });
         console.log('👌hydrato');
       } else {
