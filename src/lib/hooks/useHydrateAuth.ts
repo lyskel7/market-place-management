@@ -1,10 +1,11 @@
 'use client';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useCallback } from 'react';
 
 export const useHydrateAuth = () => {
-  const { setAuthenticated, setLoading, setUserInfo } = useAuthStore();
+  const { setAuthenticated, setLoading, setUserInfo, setHasPicture } =
+    useAuthStore();
 
   const hydrate = useCallback(async () => {
     setLoading(true);
@@ -12,17 +13,19 @@ export const useHydrateAuth = () => {
       console.log('chicking before fetchsession');
       const session = await fetchAuthSession();
       const accessToken = session.tokens?.accessToken;
+      const idTokenPayload = session.tokens?.idToken?.payload;
       console.log('session after fetchsession: ', session);
-      if (accessToken) {
-        const idTokenPayload = session.tokens?.idToken?.payload;
+      if (accessToken && idTokenPayload) {
         console.log('accessToken: ', accessToken?.payload);
         console.log('idtoken: ', idTokenPayload);
+        const userAttr = await fetchUserAttributes();
         setAuthenticated(true);
         setUserInfo({
           email: idTokenPayload?.email as string,
-          username: idTokenPayload?.name as string,
+          name: idTokenPayload?.name as string,
           groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
         });
+        setHasPicture(!!userAttr?.picture);
         console.log('👌hydrato');
       } else {
         setAuthenticated(false);
