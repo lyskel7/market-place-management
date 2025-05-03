@@ -1,8 +1,5 @@
 'use client';
-// import { createJSONStorage, persist, PersistOptions } from 'zustand/middleware';
-// import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import { create } from 'zustand';
-// import { persist } from 'zustand/middleware';
 
 interface IUserInfo {
   email?: string;
@@ -10,13 +7,16 @@ interface IUserInfo {
   username?: string;
   sub?: string;
   groups?: string[] | null;
-  picture?: string;
 }
 
 type AuthStore = {
   isAuthenticated: boolean;
   isLoading: boolean;
   userInfo: IUserInfo | null;
+  avatarUpdateTimestamp: number;
+  hasPicture?: boolean;
+  setHasPicture: (hasPicture: boolean) => void;
+  notifyAvatarUpdate: () => void;
   setAuthenticated: (auth: boolean) => void;
   setUserInfo: (info: IUserInfo | null) => void;
   setLoading: (loading: boolean) => void;
@@ -24,12 +24,14 @@ type AuthStore = {
 };
 
 export const useAuthStore = create<AuthStore>()(
-  // persist(
   (set) => ({
     isAuthenticated: false,
     userRoles: [],
     isLoading: true,
     userInfo: null,
+    avatarUpdateTimestamp: Date.now(),
+    setHasPicture: (hasPicture) => set({ hasPicture }),
+    notifyAvatarUpdate: () => set({ avatarUpdateTimestamp: Date.now() }),
     setAuthenticated: (auth) => set({ isAuthenticated: auth }),
     setUserInfo: (info) => set({ userInfo: info }),
     setLoading: (loading) => set({ isLoading: loading }),

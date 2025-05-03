@@ -27,7 +27,7 @@ export const authSchema = Joi.object<TAuthSchema>({
   password: Joi.string()
     .min(8)
     .max(30)
-    .pattern(/^[a-zA-Z0-9-_#@]+$/)
+    .pattern(/^[a-zA-Z0-9-_#@!]+$/)
     .required() // Añade esto si la contraseña es obligatoria
     .messages({
       'string.min': 'Password must be al least 8 chars.',
@@ -76,16 +76,52 @@ export const passwordValidator = (customLabel?: string) => {
 };
 
 export const unifiedPasswordSchema = Joi.object<TChangePasswordSchema>({
-  oldPassword: Joi.when('isChangeFirsTime', {
-    is: true,
-    then: Joi.forbidden(),
-    otherwise: passwordValidator('Old password'),
-  }),
+  oldPassword: Joi.string()
+    .allow('')
+    .optional()
+    .when('$isChangeFirstTime', {
+      is: true,
+      then: Joi.any()
+        .forbidden()
+        .custom((value, helpers) => {
+          console.log('Joi Context Check (is true):', helpers.prefs.context);
+          if (value !== undefined) {
+            return helpers.error('any.forbidden');
+          }
+          return value;
+        }),
+      otherwise: Joi.any()
+        .custom((value, helpers) => {
+          console.log(
+            'Joi Context Check (is false/other):',
+            helpers.prefs.context,
+          );
+          if (value === undefined || value === null || value === '') {
+            return helpers.error('any.required');
+          }
+          const { error } = passwordValidator('Old password').validate(value);
+          if (error) {
+            return helpers.error('custom', {
+              message: error.details[0].message,
+            });
+          }
+          return value;
+        })
+        .messages({ 'any.required': '"Old password" is required' }), // Mensaje para el error explícito
+    }),
+  // oldPassword: Joi.string()
+  //   .allow('')
+  //   .optional()
+  //   .when('$isChangeFirstTime', {
+  //     is: true,
+  //     then: Joi.forbidden(),
+  //     otherwise: passwordValidator('Old password'),
+  //   }),
 
-  newPassword: passwordValidator('New password').when('isChangeFirsTime', {
-    is: true,
-    then: Joi.not().valid(Joi.ref('oldPassword')).messages({
-      'any.only': 'New password must be different from old password',
+  newPassword: passwordValidator('New password').when('$isChangeFirstTime', {
+    is: false,
+    then: Joi.string().not(Joi.ref('oldPassword')).messages({
+      'any.invalid': 'New password must be different from old password',
     }),
   }),
 

@@ -44,6 +44,7 @@ const NewPasswordForm = (props: TProps) => {
       setIsLoading(false);
     } catch (err) {
       toast.error((err as Error).message || 'Error updating password');
+      setIsLoading(false);
     }
   };
 
@@ -53,7 +54,7 @@ const NewPasswordForm = (props: TProps) => {
       title="Change password"
       description="Change your password to continue"
       isLoading={isLoading}
-      isChangeFirsTime={true}
+      isChangeFirstTime={true}
       onCancel={onCancel}
     />
   );

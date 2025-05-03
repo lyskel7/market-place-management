@@ -15,29 +15,52 @@ import {
   useTheme,
 } from '@mui/material';
 import { BRANDING, NAVIGATION } from '@/lib/constants/navigation-dashboard';
+import useAvatarUrl from '@/lib/hooks/useAvatarUrl';
+import { toast } from 'react-toastify';
 
 const Layout = (props: { children: React.ReactNode }) => {
-  const { userInfo, isAuthenticated, clearAuth } = useAuthStore();
+  const { userInfo, clearAuth, avatarUpdateTimestamp } = useAuthStore();
   const [session, setSession] = useState<Session | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
   const theme = useTheme();
+  const { avatarUrl, error, refreshUrl } = useAvatarUrl();
 
   useEffect(() => {
-    if (isAuthenticated && userInfo) {
-      console.log('Dashboard Layout: Auth state updated, setting session.');
-      setSession({
-        user: {
-          name: userInfo.name || 'No name provided',
-          email: userInfo.email || 'No email provided',
-          image: userInfo.picture,
-        },
-      });
-    } else {
-      console.log('Dashboard Layout: Auth state updated, clearing session.');
+    if (error) {
+      toast.error(`Failed to load avatar: ${error.message}`);
       setSession(null);
+      return;
     }
-  }, [isAuthenticated, userInfo]);
+
+    setSession({
+      user: {
+        name: userInfo?.name || 'No name provided',
+        email: userInfo?.email || 'No email provided',
+        image: avatarUrl || '',
+      },
+    });
+  }, [avatarUrl, error, userInfo]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshUrl(false); // Refresh the URL when the tab is visible and without loading
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refreshUrl]); // refreshUrl is memoized by useCallback
+
+  // Listening to timestamp in store
+  useEffect(() => {
+    console.log(
+      'Avatar timestamp changed in store, refreshing SessionAccount avatar.',
+    );
+    refreshUrl(false);
+  }, [avatarUpdateTimestamp, refreshUrl]);
 
   const authentication: Authentication = useMemo(() => {
     return {

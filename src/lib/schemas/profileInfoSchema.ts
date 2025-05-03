@@ -1,54 +1,10 @@
 import Joi from 'joi';
 
-type TProfileInfo = {
+type TProfileInfoSchema = {
   username: string;
 };
 
-// const validateS3ImageUrl = (value: string, helpers: Joi.CustomHelpers) => {
-//   try {
-//     // 1. Parsear la URL
-//     const url = new URL(value);
-
-//     // 2. Verificar HTTPS
-//     if (url.protocol !== 'https:') {
-//       return helpers.error('url.scheme.https', { label: helpers.state.key });
-//     }
-
-//     // 3. Verificar el Host (patrones comunes de S3/CloudFront)
-//     const hostname = url.hostname;
-//     const isS3Domain =
-//       /\.s3[\.-][a-z0-9-]+\.amazonaws\.com$/i.test(hostname) || // bucket.s3.region... or s3.region...
-//       /\.s3-accelerate\.amazonaws\.com$/i.test(hostname) || // S3 Accelerate
-//       hostname.endsWith('.amazonaws.com'); // Cubre otros posibles servicios de AWS como CloudFront si no tienes CNAME
-
-//     // OPCIONAL: Añadir tus dominios personalizados de CloudFront si los usas
-//     const allowedCustomDomains = [
-//       'cdn.midominio.com',
-//       'imagenes.miempresa.net',
-//     ];
-//     const isAllowedCustomDomain = allowedCustomDomains.includes(hostname);
-
-//     if (!isS3Domain && !isAllowedCustomDomain) {
-//       return helpers.error('url.domain.s3', { label: helpers.state.key });
-//     }
-
-//     // 4. Verificar la extensión del archivo en el Path
-//     const imageExtensionRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
-//     if (!imageExtensionRegex.test(url.pathname)) {
-//       return helpers.error('url.extension.image', { label: helpers.state.key });
-//     }
-
-//     // Si todo está bien, devuelve el valor original
-//     return value;
-//   } catch (err) {
-//     console.error('Error parsing URL:', err);
-//     // Si new URL() falla, no es una URL válida en absoluto
-//     return helpers.error('string.uri', { label: helpers.state.key, value });
-//   }
-// };
-
-// Esquema Joi usando la validación personalizada
-export const profileInfoSchema = Joi.object<TProfileInfo>({
+export const profileInfoSchema = Joi.object<TProfileInfoSchema>({
   username: Joi.string()
     .min(3)
     .max(30)
@@ -63,6 +19,50 @@ export const profileInfoSchema = Joi.object<TProfileInfo>({
     })
     .label('Username'),
 
+  // const validateS3ImageUrl = (value: string, helpers: Joi.CustomHelpers) => {
+  //   try {
+  //     // 1. Parsear la URL
+  //     const url = new URL(value);
+
+  //     // 2. Verificar HTTPS
+  //     if (url.protocol !== 'https:') {
+  //       return helpers.error('url.scheme.https', { label: helpers.state.key });
+  //     }
+
+  //     // 3. Verificar el Host (patrones comunes de S3/CloudFront)
+  //     const hostname = url.hostname;
+  //     const isS3Domain =
+  //       /\.s3[\.-][a-z0-9-]+\.amazonaws\.com$/i.test(hostname) || // bucket.s3.region... or s3.region...
+  //       /\.s3-accelerate\.amazonaws\.com$/i.test(hostname) || // S3 Accelerate
+  //       hostname.endsWith('.amazonaws.com'); // Cubre otros posibles servicios de AWS como CloudFront si no tienes CNAME
+
+  //     // OPCIONAL: Añadir tus dominios personalizados de CloudFront si los usas
+  //     const allowedCustomDomains = [
+  //       'cdn.midominio.com',
+  //       'imagenes.miempresa.net',
+  //     ];
+  //     const isAllowedCustomDomain = allowedCustomDomains.includes(hostname);
+
+  //     if (!isS3Domain && !isAllowedCustomDomain) {
+  //       return helpers.error('url.domain.s3', { label: helpers.state.key });
+  //     }
+
+  //     // 4. Verificar la extensión del archivo en el Path
+  //     const imageExtensionRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
+  //     if (!imageExtensionRegex.test(url.pathname)) {
+  //       return helpers.error('url.extension.image', { label: helpers.state.key });
+  //     }
+
+  //     // Si todo está bien, devuelve el valor original
+  //     return value;
+  //   } catch (err) {
+  //     console.error('Error parsing URL:', err);
+  //     // Si new URL() falla, no es una URL válida en absoluto
+  //     return helpers.error('string.uri', { label: helpers.state.key, value });
+  //   }
+  // };
+
+  // Esquema Joi usando la validación personalizada
   // avatarUrl: Joi.string()
   //   .custom(validateS3ImageUrl, 'S3 Image URL Validation') // Aplicar la función personalizada
   //   .required() // O .optional()

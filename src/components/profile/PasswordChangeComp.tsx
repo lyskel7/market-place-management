@@ -35,7 +35,7 @@ const PasswordChangeComp = () => {
       title=""
       description="Change your password. Type a new one"
       isLoading={isLoading}
-      isChangeFirsTime={false}
+      isChangeFirstTime={false}
     />
   );
 };

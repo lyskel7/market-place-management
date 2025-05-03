@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 export type TFormValues = {
@@ -25,7 +25,7 @@ type TProps = {
   title: string;
   description: string;
   isLoading: boolean;
-  isChangeFirsTime: boolean; //True for changing password, false for stablishing initial password
+  isChangeFirstTime: boolean; //True for establishing initial password
   onCancel?: () => void;
 };
 
@@ -36,7 +36,7 @@ const PasswordComp = (props: TProps) => {
     title,
     description,
     isLoading,
-    isChangeFirsTime,
+    isChangeFirstTime,
   } = props;
   const { isMobile } = useResponsive();
   const [visibility, setVisibility] = useState<{ [key: string]: boolean }>({
@@ -44,7 +44,7 @@ const PasswordComp = (props: TProps) => {
     newPassword: false,
     confirmedPassword: false,
   });
-  console.log('PasswordComp - isChangeFirsTime prop:', isChangeFirsTime);
+  console.log('PasswordComp - isChangeFirstTime prop:', isChangeFirstTime);
 
   const {
     register,
@@ -55,10 +55,10 @@ const PasswordComp = (props: TProps) => {
   } = useForm<TFormValues>({
     resolver: joiResolver(unifiedPasswordSchema, {
       abortEarly: false, // Set abortEarly to false to get all errors at once
-      context: { isChangeFirsTime }, // Pass the isChangeMode prop to the schema context
+      context: { isChangeFirstTime: isChangeFirstTime }, // Pass the isChangeMode prop to the schema context
     }),
     defaultValues: {
-      ...(isChangeFirsTime ? {} : { oldPassword: '' }),
+      ...(isChangeFirstTime ? {} : { oldPassword: '' }),
       newPassword: '',
       confirmedPassword: '',
     },
@@ -72,9 +72,9 @@ const PasswordComp = (props: TProps) => {
     }));
   };
 
-  // useEffect(() => {
-  //   console.log('Form Errors:', errors);
-  // }, [errors]);
+  useEffect(() => {
+    console.log('Form Errors:', errors);
+  }, [errors]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -82,8 +82,8 @@ const PasswordComp = (props: TProps) => {
         width={isMobile ? '98%' : 1}
         height={'100vh'}
         display={'flex'}
-        justifyContent={isChangeFirsTime ? 'center' : 'flex-start'}
-        alignItems={isChangeFirsTime ? 'center' : 'flex-start'}
+        justifyContent={isChangeFirstTime ? 'center' : 'flex-start'}
+        alignItems={isChangeFirstTime ? 'center' : 'flex-start'}
       >
         <Box
           display={'flex'}
@@ -109,7 +109,7 @@ const PasswordComp = (props: TProps) => {
             {description}
             {/* Please, type your old password and the new password twice to confirm */}
           </Typography>
-          {!isChangeFirsTime && (
+          {!isChangeFirstTime && (
             <TextField
               id="oldPassword"
               label="Contraseña Actual" // Puedes hacerlo configurable con props si quieres
@@ -218,7 +218,7 @@ const PasswordComp = (props: TProps) => {
             >
               {isLoading ? <CircularProgress size={24} /> : 'Change it!'}
             </Button>
-            {!isChangeFirsTime && (
+            {!isChangeFirstTime && (
               <Button
                 type="button"
                 variant="contained"
