@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< HEAD
+=======
+
+# Amplify
+.amplify
+amplify/.config/local-aws-info.json
+amplify/.config/local-aws-info.json.backup
+amplify/node_modules
+>>>>>>> feature/amplify

@@ -22,7 +22,7 @@ export enum EVarAttr {
 }
 
 export enum ERoles {
-  SUPERDADMINS = 'superadmins',
-  MANAGERS = 'managers',
-  VIEWERS = 'viewers',
+  ADMINS = 'ADMINS',
+  EDITORS = 'EDITORS',
+  VIEWERS = 'VIEWERS',
 }

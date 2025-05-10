@@ -13,7 +13,7 @@ interface IUseAvatarUrlResult {
 }
 
 const useAvatarUrl = (): IUseAvatarUrlResult => {
-  const { userInfo, hasPicture } = useAuthStore();
+  const { userInfo } = useAuthStore();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
@@ -24,8 +24,7 @@ const useAvatarUrl = (): IUseAvatarUrlResult => {
   const fetchUrl = useCallback(
     async (showLoading = false) => {
       console.log('user info: ', userInfo);
-      console.log('has picture: ', hasPicture);
-      if (!userInfo || !hasPicture) {
+      if (!userInfo || userInfo.picture === 'false') {
         setAvatarUrl(null);
         setError(null);
         setIsLoading(false);
@@ -33,7 +32,7 @@ const useAvatarUrl = (): IUseAvatarUrlResult => {
       }
 
       if (showLoading) setIsLoading(true); // Mostrar loading solo si se pide
-      setError(null); // Limpiar error anterior
+      setError(null);
 
       try {
         const inputGet: GetUrlWithPathInput = {
@@ -56,7 +55,7 @@ const useAvatarUrl = (): IUseAvatarUrlResult => {
         if (showLoading) setIsLoading(false);
       }
     },
-    [hasPicture, userInfo],
+    [userInfo],
   );
 
   useEffect(() => {

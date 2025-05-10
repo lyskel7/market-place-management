@@ -1,7 +1,12 @@
 'use client';
 
 import useAvatarUrl from '@/lib/hooks/useAvatarUrl';
-import { useAuthStore } from '@/lib/stores/authStore';
+import { TAuthStore, useAuthStore } from '@/lib/stores/authStore';
+import {
+  fetchAuthSession,
+  updateUserAttribute,
+  UpdateUserAttributeInput,
+} from '@aws-amplify/auth';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -18,6 +23,7 @@ import {
 import { uploadData, UploadDataWithPathInput } from 'aws-amplify/storage';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { useShallow } from 'zustand/react/shallow';
 
 const AvatarUploaderComp = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -25,8 +31,14 @@ const AvatarUploaderComp = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const notifyAvatarUpdate = useAuthStore((state) => state.notifyAvatarUpdate);
-  const setHasPicture = useAuthStore((state) => state.setHasPicture);
+  const { userInfo, notifyAvatarUpdate, setUserInfo } = useAuthStore(
+    useShallow((state: TAuthStore) => ({
+      notifyAvatarUpdate: state.notifyAvatarUpdate,
+      userInfo: state.userInfo,
+      setUserInfo: state.setUserInfo,
+      // setHasPicture: state.setHasPicture,
+    })),
+  );
   const {
     avatarUrl,
     refreshUrl,
@@ -62,6 +74,46 @@ const AvatarUploaderComp = () => {
     }
   };
 
+  const handleHasProfilePictureUpdate = async (newS3Url: string) => {
+    try {
+      console.log('Forcing token refresh...');
+      await fetchAuthSession({ forceRefresh: true });
+      console.log('Tokens refreshed.');
+    } catch (refreshError) {
+      console.error('Error refreshing session:', refreshError);
+    }
+
+    try {
+      if (!userInfo || !newS3Url) {
+        toast.error('User info not found or new URL is empty.');
+        return;
+      }
+
+      const input: UpdateUserAttributeInput = {
+        userAttribute: {
+          attributeKey: 'picture',
+          value: (!!newS3Url).toString(),
+        },
+      };
+      await updateUserAttribute(input);
+      console.log('Cognito user attribute "picture" updated.');
+
+      setUserInfo({
+        ...userInfo,
+        picture: (!!newS3Url).toString(),
+      });
+
+      console.log('Forcing token refresh after avatar update...');
+      await fetchAuthSession({ forceRefresh: true });
+      console.log('Tokens refreshed successfully after avatar update.');
+
+      toast.success('Avatar URL saved to profile.');
+    } catch (error) {
+      console.error('Error updating user attribute "picture":', error);
+      toast.error('Could not save the new avatar URL to your profile.');
+    }
+  };
+
   const handleUpload = async () => {
     if (!selectedFile) {
       toast.warn('Please select a file to upload.');
@@ -91,10 +143,10 @@ const AvatarUploaderComp = () => {
         },
       };
 
-      await uploadData(inputUpload).result; // Wating for the promise completion
+      const newUrl = await uploadData(inputUpload).result;
+      await handleHasProfilePictureUpdate(newUrl.path);
       await refreshUrl(false); // Refresh the URL without loading
       notifyAvatarUpdate();
-      setHasPicture(true);
       toast.success('Avatar uploaded successfully!');
       setSelectedFile(null);
     } catch (error) {

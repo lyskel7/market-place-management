@@ -4,8 +4,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { useCallback } from 'react';
 
 export const useHydrateAuth = () => {
-  const { setAuthenticated, setLoading, setUserInfo, setHasPicture } =
-    useAuthStore();
+  const { setAuthenticated, setLoading, setUserInfo } = useAuthStore();
 
   const hydrate = useCallback(async () => {
     setLoading(true);
@@ -24,8 +23,8 @@ export const useHydrateAuth = () => {
           email: idTokenPayload?.email as string,
           name: idTokenPayload?.name as string,
           groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
+          picture: userAttr?.picture || 'false',
         });
-        setHasPicture(!!userAttr?.picture);
         console.log('👌hydrato');
       } else {
         setAuthenticated(false);
@@ -38,6 +37,6 @@ export const useHydrateAuth = () => {
     } finally {
       setLoading(false);
     }
-  }, [setAuthenticated, setUserInfo, setLoading]);
+  }, [setLoading, setAuthenticated, setUserInfo]);
   return hydrate;
 };

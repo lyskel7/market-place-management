@@ -1,8 +1,9 @@
 'use client';
-import type { CreateUserInput } from '@/API';
-import { adminCreateUserWithGroup } from '@/graphql/mutations';
 import { ROLES } from '@/lib/constants/frontend';
+import { ERoles } from '@/lib/enums';
+import useCreateUserOptimisticMutation from '@/lib/hooks/useCreateCognitoUserMutation';
 import useResponsive from '@/lib/hooks/useResponsive';
+import { TProfileFormValues } from '@/lib/interfaces';
 import { userManagementSchema } from '@/lib/schemas';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
@@ -13,10 +14,9 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { generateClient } from 'aws-amplify/api';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { Schema } from '../../../amplify/data/resource';
 
 type TFormValues = {
   email: string;
@@ -24,10 +24,11 @@ type TFormValues = {
   rol: string;
 };
 
-const client = generateClient();
+export type SchemaType = Schema['UsersResponse']['type'];
 
 const UsersManagementComp = () => {
   const { isMobile } = useResponsive();
+  const createUserMutation = useCreateUserOptimisticMutation();
   const {
     control,
     handleSubmit,
@@ -44,45 +45,16 @@ const UsersManagementComp = () => {
   });
 
   const handleOnSubmit = handleSubmit(async (data) => {
-    try {
-      console.log('Submitting data:', data);
+    // Mapping form data to GraphQL input
+    const input: TProfileFormValues = {
+      email: data.email,
+      name: data.username,
+      groupName: data.rol || ERoles.VIEWERS,
+      profilePicture: 'false',
+    };
 
-      // Mapping form data to GraphQL input
-      const input: CreateUserInput = {
-        email: data.email,
-        name: data.username,
-        groupName: data.rol.toLowerCase(),
-      };
-
-      // Calling GraphQL mutation
-      const result = await client.graphql({
-        query: adminCreateUserWithGroup,
-        variables: { input },
-      });
-      console.log('GraphQL Result:', result);
-
-      if (result.errors && result.errors.length > 0) {
-        console.error('GraphQL Errors:', result.errors);
-        throw new Error(`GraphQL errors occurred: ${result.errors.join(', ')}`);
-      }
-
-      const payload = result.data?.adminCreateUserWithGroup;
-      console.log('Payload:', payload);
-
-      if (payload) {
-        toast.success(`User ${payload.name} created successfully!`);
-        reset();
-      } else {
-        const errorMessage = 'Failed to create user. Unknown reason.';
-        throw new Error(errorMessage);
-      }
-    } catch (error: unknown) {
-      console.error('Error calling adminCreateUserWithGroup mutation:', error);
-      // const gqlError = error?.errors?.[0]?.message; // Trying getting GraphQL error message
-      const gqlError = error;
-      const errorMessage = gqlError || 'An unexpected error occurred.';
-      toast.error(errorMessage as string);
-    }
+    // Calling GraphQL mutation
+    createUserMutation.mutate(input);
   });
 
   useEffect(() => {
