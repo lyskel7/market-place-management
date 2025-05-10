@@ -4,9 +4,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import Slide from '@mui/material/Slide';
-import { TransitionProps } from '@mui/material/transitions';
-import { Dispatch, forwardRef, ReactElement, Ref, SetStateAction } from 'react';
+import Fade from '@mui/material/Fade';
+import { Dispatch, SetStateAction } from 'react';
 
 type TConfirmationDialogProps = {
   title: string;
@@ -16,23 +15,10 @@ type TConfirmationDialogProps = {
   onAccept: VoidFunction;
 };
 
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement;
-  },
-  ref: Ref<unknown>,
-) {
-  return (
-    <Slide
-      direction="up"
-      ref={ref}
-      {...props}
-    />
-  );
-});
-
 export default function ConfirmationDialog(props: TConfirmationDialogProps) {
   const { title, message, open, onOpen, onAccept } = props;
+
+  console.log('ConfirmationDialog props:');
 
   const handleClose = () => {
     onOpen(false);
@@ -46,9 +32,9 @@ export default function ConfirmationDialog(props: TConfirmationDialogProps) {
   return (
     <Dialog
       open={open}
-      TransitionComponent={Transition}
-      keepMounted
       onClose={handleClose}
+      slots={{ transition: Fade }}
+      keepMounted
       aria-describedby="confirmation-dialog"
       closeAfterTransition={false}
     >

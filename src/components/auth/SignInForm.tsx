@@ -1,27 +1,27 @@
 'use client';
+import { useHydrateAuth } from '@/lib/hooks/useHydrateAuth';
 import useResponsive from '@/lib/hooks/useResponsive';
 import { authSchema } from '@/lib/schemas';
+import { useAuthStore } from '@/lib/stores/authStore';
 import { joiResolver } from '@hookform/resolvers/joi';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {
+  Backdrop,
   Box,
   Button,
-  TextField,
-  Typography,
   CircularProgress,
   IconButton,
-  Backdrop,
+  TextField,
+  Typography,
+  useTheme,
 } from '@mui/material';
+import type { SignInOutput } from 'aws-amplify/auth';
+import { signIn, signOut } from 'aws-amplify/auth';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import NewPasswordForm from './NewPasswordForm';
-import type { SignInOutput } from 'aws-amplify/auth';
-import { signIn, signOut } from 'aws-amplify/auth';
-import { useHydrateAuth } from '@/lib/hooks/useHydrateAuth';
-import { useAuthStore } from '@/lib/stores/authStore';
-import { useTheme } from '@mui/material';
 
 type TFormValues = {
   email: string;

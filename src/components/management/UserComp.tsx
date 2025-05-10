@@ -1,53 +1,45 @@
 'use client';
-import { deleteItems, updateItem } from '@/lib/apis/db';
 import useResponsive from '@/lib/hooks/useResponsive';
-import { ICategory, IURLDeleteParams } from '@/lib/interfaces';
-import { useCategoryStore } from '@/lib/stores/categoryStore';
+import { TProfileFormValues } from '@/lib/interfaces';
+import { generateClient } from '@aws-amplify/api';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import {
-  Avatar,
   Box,
   Button,
   Collapse,
   IconButton,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   Switch,
   Tooltip,
 } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useShallow } from 'zustand/react/shallow';
-import MuiIconRender from './common/MuiIconRender';
-import ConfirmationDialog from './common/ConfirmationDialog';
-import { ETypes } from '@/lib/enums';
-import { useQueryClient } from '@tanstack/react-query';
+import { Schema } from '../../../amplify/data/resource';
+import ConfirmationDialog from '../common/ConfirmationDialog';
+import { IInputForDeleteUser, SchemaType } from '@/lib/apis/amplifyDB';
+import { useDeleteUserOptimisticMutation } from '@/lib/hooks/useDeleteCognitoUserMutation';
+
+const client = generateClient<Schema>({
+  authMode: 'userPool',
+});
 
 type TProps = {
-  category: ICategory;
-  etype: ETypes;
-  ref: ((node: HTMLLIElement | null) => void) | null;
+  user: SchemaType;
+  onRefresh: () => unknown;
 };
 
-const CategoryComp = (props: TProps) => {
-  const { category, ref, etype } = props;
-  const { pk, sk, itemName, itemDesc, icon, hidden } = category;
-  const { isMobile } = useResponsive();
-  const [checked, setChecked] = useState(hidden);
-  const [open, setOpen] = useState(false);
+const UserComp = ({ user }: TProps) => {
+  const { email, name, enabled } = user;
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
-  const { setItemForEdit, setIsUpdating } = useCategoryStore(
-    useShallow((state) => ({
-      setIsUpdating: state.setIsUpdating,
-      setItemForEdit: state.setItemForEdit,
-    })),
-  );
-  const queryClient = useQueryClient();
+  const { isMobile } = useResponsive();
+  const [open, setOpen] = useState(false);
+  const [checked, setChecked] = useState(enabled ?? true);
+  const deleteMutation = useDeleteUserOptimisticMutation();
 
   const handleClick = () => {
     setOpen(!open);
@@ -58,37 +50,47 @@ const CategoryComp = (props: TProps) => {
   }: ChangeEvent<HTMLInputElement>) => {
     setChecked(checked);
     try {
-      const updatedCategory: Partial<ICategory> = {
-        pk,
-        sk,
-        hidden: checked,
-        updated: new Date().toISOString(),
+      // Mapping form data to GraphQL input
+      const input: TProfileFormValues = {
+        email: email || '',
+        name: name || '',
+        enabled: checked,
       };
-      await updateItem(updatedCategory);
-      await queryClient.refetchQueries({ queryKey: [etype] });
+
+      const result = await client.mutations.updateUsers(input);
+      console.log('GraphQL Result:', result);
+
+      if (result.errors && result.errors.length > 0) {
+        console.error('GraphQL Errors:', result.errors);
+        throw new Error(`GraphQL errors occurred: ${result.errors.join(', ')}`);
+      }
+
+      const payload = result.data;
+      console.log('Payload:', payload);
+
+      if (payload) {
+        toast.success(
+          `User ${payload.name} ${checked ? 'enabled' : 'disabled'} successfully!`,
+        );
+      } else {
+        const errorMessage = 'Failed updating user. Unknown reason.';
+        throw new Error(errorMessage);
+      }
     } catch (error) {
-      console.debug('Category could not be updated', error);
-      toast.error(`Category could not be updated`);
+      console.debug('User could not be updated', error);
+      toast.error(`User could not be updated`);
     }
   };
 
   const handleDelete = async () => {
-    try {
-      const urlDeleteParam: IURLDeleteParams = {
-        pk,
-        sk,
-      };
+    console.log('Deleting user');
+    // Mapping form data to GraphQL input
+    const input: IInputForDeleteUser = {
+      email: email || '',
+      name: name || '',
+    };
 
-      await deleteItems(urlDeleteParam);
-      toast.success('Category removed');
-      await queryClient.refetchQueries({ queryKey: [etype] });
-      await queryClient.invalidateQueries({
-        queryKey: ['categories_selector'],
-      });
-    } catch (error) {
-      console.debug('Error while deleting: ', error);
-      toast.error('Error while deleting. Try later');
-    }
+    if (email) deleteMutation.mutate(input);
   };
 
   const handleConfirmDelete = () => {
@@ -96,8 +98,8 @@ const CategoryComp = (props: TProps) => {
   };
 
   const handleSetUpdateCategory = () => {
-    setItemForEdit(category);
-    setIsUpdating(true);
+    // setItemForEdit(category);
+    // setIsUpdating(true);
   };
 
   useEffect(() => {
@@ -110,14 +112,13 @@ const CategoryComp = (props: TProps) => {
     <>
       <ConfirmationDialog
         title="Removing"
-        message="Are you sure to remove the category?"
+        message={`Are you sure to remove the user: ${name}?`}
         open={openConfirmationDialog}
         onOpen={setOpenConfirmationDialog}
         onAccept={handleDelete}
       />
       <ListItem
-        key={pk}
-        ref={ref}
+        key={user.id}
         secondaryAction={
           isMobile ? (
             open ? (
@@ -137,12 +138,12 @@ const CategoryComp = (props: TProps) => {
               alignItems={'center'}
             >
               <Tooltip
-                title={hidden ? 'Hidden' : 'Unhidden'}
+                title={checked ? 'Enabled' : 'Disabled'}
                 placement="left-end"
                 arrow
               >
                 <Switch
-                  id={`switch-hidden-${sk}`}
+                  id={`switch-hidden-${user.enabled}`}
                   checked={checked}
                   onChange={handleOnChangeChecked}
                 />
@@ -179,18 +180,9 @@ const CategoryComp = (props: TProps) => {
           )
         }
       >
-        {pk === ETypes.CATEGORY && (
-          <ListItemAvatar>
-            <Avatar>
-              <MuiIconRender iconName={icon} />
-            </Avatar>
-          </ListItemAvatar>
-        )}
         <ListItemText
-          primary={itemName}
-          secondary={itemDesc}
-          // primary={type === ETypes.CATEGORY ? category_name : subcategory_name}
-          // secondary={type === ETypes.CATEGORY ? category_desc : subcategory_desc}
+          primary={name}
+          secondary={email}
         />
       </ListItem>
       {isMobile && (
@@ -204,7 +196,7 @@ const CategoryComp = (props: TProps) => {
             disablePadding
           >
             <ListItem sx={{ pl: 4 }}>
-              <Switch checked={false} />
+              <Switch checked={enabled ?? false} />
               <Button startIcon={<EditIcon />}>Edit</Button>
               <Button
                 startIcon={<DeleteIcon />}
@@ -220,4 +212,4 @@ const CategoryComp = (props: TProps) => {
   );
 };
 
-export default CategoryComp;
+export default UserComp;

@@ -8,6 +8,7 @@ import FormatShapesIcon from '@mui/icons-material/FormatShapes';
 import BadgeIcon from '@mui/icons-material/Badge';
 import { Navigation } from '@toolpad/core/AppProvider';
 import PinIcon from '@mui/icons-material/Pin';
+import GroupIcon from '@mui/icons-material/Group';
 
 export const NAVIGATION: Navigation = [
   {
@@ -55,6 +56,13 @@ export const NAVIGATION: Navigation = [
     segment: 'dashboard/profile/info',
     title: 'Profile info',
     icon: <BadgeIcon />,
+  },
+  { kind: 'divider' },
+  { kind: 'header', title: 'Users management' },
+  {
+    segment: 'dashboard/users',
+    title: 'Users',
+    icon: <GroupIcon />,
   },
 ];
 

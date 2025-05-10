@@ -3,7 +3,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/stores/authStore';
 // import LinearProgress from '@mui/material/LinearProgress';
-import SplashScreen from './common/loaders/SplashScreen';
+import SplashScreen from '../common/loaders/SplashScreen';
 
 export const ClientAuthGuard = ({
   children,

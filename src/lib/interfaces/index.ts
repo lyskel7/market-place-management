@@ -83,3 +83,11 @@ export type TPasswordFormValues = {
   confirmedPassword: string;
   oldPassword?: string;
 };
+
+export type TProfileFormValues = {
+  email: string;
+  name: string;
+  groupName?: string;
+  profilePicture?: string;
+  enabled?: boolean;
+};

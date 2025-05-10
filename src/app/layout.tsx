@@ -5,9 +5,10 @@ import { ReactNode, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { useHydrateAuth } from '@/lib/hooks/useHydrateAuth';
 import { configureAmplify } from '@/lib/amplify/amplify';
-import { ClientAuthGuard } from '@/components/ClientAuthGuard';
+import { ClientAuthGuard } from '@/components/guards/ClientAuthGuard';
 import { ThemeProvider } from '@mui/material';
 import theme from '@/styles/theme';
+import AmplifyClientInitializer from '@/lib/amplify/AmplifyClientInitializer';
 
 export default function RootLayout(props: { children: ReactNode }) {
   const hydrateAuth = useHydrateAuth();
@@ -27,17 +28,19 @@ export default function RootLayout(props: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <body>
-        <ThemeProvider theme={theme}>
-          <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-            <ReactQueryProviders>
-              <ClientAuthGuard>{props.children}</ClientAuthGuard>
-              <ToastContainer
-                position="top-right"
-                autoClose={3000}
-              />
-            </ReactQueryProviders>
-          </AppRouterCacheProvider>
-        </ThemeProvider>
+        <AmplifyClientInitializer>
+          <ThemeProvider theme={theme}>
+            <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+              <ReactQueryProviders>
+                <ClientAuthGuard>{props.children}</ClientAuthGuard>
+                <ToastContainer
+                  position="top-right"
+                  autoClose={3000}
+                />
+              </ReactQueryProviders>
+            </AppRouterCacheProvider>
+          </ThemeProvider>
+        </AmplifyClientInitializer>
       </body>
     </html>
   );

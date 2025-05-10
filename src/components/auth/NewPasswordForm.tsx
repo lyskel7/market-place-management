@@ -1,10 +1,10 @@
 'use client';
+import { TPasswordFormValues } from '@/lib/interfaces';
 import { confirmSignIn, SignInOutput } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import PasswordComp from '../profile/PasswordComp';
-import { TPasswordFormValues } from '@/lib/interfaces';
 
 type TProps = {
   cognitoUser: string;
@@ -44,6 +44,7 @@ const NewPasswordForm = (props: TProps) => {
       setIsLoading(false);
     } catch (err) {
       toast.error((err as Error).message || 'Error updating password');
+      setIsLoading(false);
     }
   };
 
@@ -53,7 +54,7 @@ const NewPasswordForm = (props: TProps) => {
       title="Change password"
       description="Change your password to continue"
       isLoading={isLoading}
-      isChangeFirsTime={true}
+      isChangeFirstTime={true}
       onCancel={onCancel}
     />
   );
