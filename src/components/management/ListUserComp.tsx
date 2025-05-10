@@ -1,4 +1,5 @@
 'use client';
+<<<<<<< HEAD
 import { TUser } from '@/API';
 import { getUsers } from '@/graphql/queries';
 import { List } from '@mui/material';
@@ -55,20 +56,47 @@ const ListUserComp = () => {
   }, []); // El array vacío asegura que se ejecute solo al montar
 
   // Renderiza basado en los estados
+=======
+import useFetcherCognitoUsers from '@/lib/hooks/useFetcherCognitoUsers';
+import { List } from '@mui/material';
+import { toast } from 'react-toastify';
+import UserComp from './UserComp';
+
+const ListUserComp = () => {
+  const { data, isError, error, isLoading, refetch } = useFetcherCognitoUsers();
+
+>>>>>>> feature/amplify
   if (isLoading) {
     return <div>Loading users...</div>;
   }
 
+<<<<<<< HEAD
   if (error) {
     return <div>Error: {error}</div>;
+=======
+  if (isError) {
+    toast.error(error?.message, {
+      autoClose: false,
+      toastId: 'UsersCognitoErrorId',
+    });
+    return;
+>>>>>>> feature/amplify
   }
 
   return (
     <List>
+<<<<<<< HEAD
       {users?.map((user) => (
         <UserComp
           key={user.id}
           user={user}
+=======
+      {data?.map((user) => (
+        <UserComp
+          key={user.id}
+          user={user}
+          onRefresh={refetch}
+>>>>>>> feature/amplify
         />
       ))}
     </List>

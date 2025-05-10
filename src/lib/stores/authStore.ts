@@ -5,17 +5,23 @@ interface IUserInfo {
   email?: string;
   name?: string;
   username?: string;
+  picture?: string | null;
   sub?: string;
   groups?: string[] | null;
 }
 
-type AuthStore = {
+export type TAuthStore = {
   isAuthenticated: boolean;
   isLoading: boolean;
   userInfo: IUserInfo | null;
   avatarUpdateTimestamp: number;
+<<<<<<< HEAD
   hasPicture?: boolean;
   setHasPicture: (hasPicture: boolean) => void;
+=======
+  // hasPicture: boolean;
+  // setHasPicture: (hasPicture: boolean) => void;
+>>>>>>> feature/amplify
   notifyAvatarUpdate: () => void;
   setAuthenticated: (auth: boolean) => void;
   setUserInfo: (info: IUserInfo | null) => void;
@@ -23,14 +29,23 @@ type AuthStore = {
   clearAuth: () => void;
 };
 
+<<<<<<< HEAD
 export const useAuthStore = create<AuthStore>()(
+=======
+export const useAuthStore = create<TAuthStore>()(
+>>>>>>> feature/amplify
   (set) => ({
     isAuthenticated: false,
     userRoles: [],
     isLoading: true,
     userInfo: null,
     avatarUpdateTimestamp: Date.now(),
+<<<<<<< HEAD
     setHasPicture: (hasPicture) => set({ hasPicture }),
+=======
+    // hasPicture: false,
+    // setHasPicture: (hasPicture) => set({ hasPicture }),
+>>>>>>> feature/amplify
     notifyAvatarUpdate: () => set({ avatarUpdateTimestamp: Date.now() }),
     setAuthenticated: (auth) => set({ isAuthenticated: auth }),
     setUserInfo: (info) => set({ userInfo: info }),

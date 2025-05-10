@@ -1,10 +1,10 @@
 'use client';
+import { TPasswordFormValues } from '@/lib/interfaces';
 import { confirmSignIn, SignInOutput } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import PasswordComp from '../profile/PasswordComp';
-import { TPasswordFormValues } from '@/lib/interfaces';
 
 type TProps = {
   cognitoUser: string;

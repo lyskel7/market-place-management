@@ -1,12 +1,13 @@
 'use client';
 import { Amplify } from 'aws-amplify';
-import awsExports from '@/aws-exports';
+import output from '../../../amplify_outputs.json';
+// import awsExports from '@/aws-exports';
 
 let isConfigured = false;
 
 export const configureAmplify = () => {
   if (!isConfigured) {
-    Amplify.configure({ ...awsExports });
+    Amplify.configure(output);
     isConfigured = true;
   }
 };

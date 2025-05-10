@@ -12,7 +12,11 @@ import {
 } from 'aws-amplify/auth';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+<<<<<<< HEAD
 import AvatarUploaderComp from '../AvatarUploaderComp';
+=======
+import AvatarUploaderComp from './AvatarUploaderComp';
+>>>>>>> feature/amplify
 
 type TFormValues = {
   username: string;

@@ -24,7 +24,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useShallow } from 'zustand/react/shallow';
 import MuiIconRender from './common/MuiIconRender';
-import ConfirmationDialog from './common/Snackbar';
+import ConfirmationDialog from './common/ConfirmationDialog';
 import { ETypes } from '@/lib/enums';
 import { useQueryClient } from '@tanstack/react-query';
 

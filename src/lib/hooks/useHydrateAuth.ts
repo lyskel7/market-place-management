@@ -24,6 +24,7 @@ export const useHydrateAuth = () => {
           email: idTokenPayload?.email as string,
           name: idTokenPayload?.name as string,
           groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
+          picture: userAttr?.picture || 'false',
         });
         setHasPicture(!!userAttr?.picture);
         console.log('👌hydrato');
@@ -38,6 +39,6 @@ export const useHydrateAuth = () => {
     } finally {
       setLoading(false);
     }
-  }, [setAuthenticated, setUserInfo, setLoading]);
+  }, [setLoading, setAuthenticated, setUserInfo]);
   return hydrate;
 };

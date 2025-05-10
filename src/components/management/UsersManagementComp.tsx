@@ -1,8 +1,16 @@
 'use client';
+<<<<<<< HEAD
 import type { CreateUserInput } from '@/API';
 import { adminCreateUserWithGroup } from '@/graphql/mutations';
 import { ROLES } from '@/lib/constants/frontend';
 import useResponsive from '@/lib/hooks/useResponsive';
+=======
+import { ROLES } from '@/lib/constants/frontend';
+import { ERoles } from '@/lib/enums';
+import useCreateUserOptimisticMutation from '@/lib/hooks/useCreateCognitoUserMutation';
+import useResponsive from '@/lib/hooks/useResponsive';
+import { TProfileFormValues } from '@/lib/interfaces';
+>>>>>>> feature/amplify
 import { userManagementSchema } from '@/lib/schemas';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
@@ -13,10 +21,16 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
+<<<<<<< HEAD
 import { generateClient } from 'aws-amplify/api';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+=======
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Schema } from '../../../amplify/data/resource';
+>>>>>>> feature/amplify
 
 type TFormValues = {
   email: string;
@@ -24,10 +38,18 @@ type TFormValues = {
   rol: string;
 };
 
+<<<<<<< HEAD
 const client = generateClient();
 
 const UsersManagementComp = () => {
   const { isMobile } = useResponsive();
+=======
+export type SchemaType = Schema['UsersResponse']['type'];
+
+const UsersManagementComp = () => {
+  const { isMobile } = useResponsive();
+  const createUserMutation = useCreateUserOptimisticMutation();
+>>>>>>> feature/amplify
   const {
     control,
     handleSubmit,
@@ -44,6 +66,7 @@ const UsersManagementComp = () => {
   });
 
   const handleOnSubmit = handleSubmit(async (data) => {
+<<<<<<< HEAD
     try {
       console.log('Submitting data:', data);
 
@@ -83,6 +106,18 @@ const UsersManagementComp = () => {
       const errorMessage = gqlError || 'An unexpected error occurred.';
       toast.error(errorMessage as string);
     }
+=======
+    // Mapping form data to GraphQL input
+    const input: TProfileFormValues = {
+      email: data.email,
+      name: data.username,
+      groupName: data.rol || ERoles.VIEWERS,
+      profilePicture: 'false',
+    };
+
+    // Calling GraphQL mutation
+    createUserMutation.mutate(input);
+>>>>>>> feature/amplify
   });
 
   useEffect(() => {
