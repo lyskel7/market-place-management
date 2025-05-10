@@ -1,12 +1,7 @@
 'use client';
-<<<<<<< HEAD
-import { TUser } from '@/API';
-import useResponsive from '@/lib/hooks/useResponsive';
-=======
 import useResponsive from '@/lib/hooks/useResponsive';
 import { TProfileFormValues } from '@/lib/interfaces';
 import { generateClient } from '@aws-amplify/api';
->>>>>>> feature/amplify
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -23,12 +18,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
-<<<<<<< HEAD
-import ConfirmationDialog from '../common/Snackbar';
-
-type TProps = {
-  user: TUser;
-=======
 import { toast } from 'react-toastify';
 import { Schema } from '../../../amplify/data/resource';
 import ConfirmationDialog from '../common/ConfirmationDialog';
@@ -42,7 +31,6 @@ const client = generateClient<Schema>({
 type TProps = {
   user: SchemaType;
   onRefresh: () => unknown;
->>>>>>> feature/amplify
 };
 
 const UserComp = ({ user }: TProps) => {
@@ -50,13 +38,8 @@ const UserComp = ({ user }: TProps) => {
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
   const { isMobile } = useResponsive();
   const [open, setOpen] = useState(false);
-<<<<<<< HEAD
-  // const [checked, setChecked] = useState(hidden);
-  const [checked, setChecked] = useState(enabled ?? true);
-=======
   const [checked, setChecked] = useState(enabled ?? true);
   const deleteMutation = useDeleteUserOptimisticMutation();
->>>>>>> feature/amplify
 
   const handleClick = () => {
     setOpen(!open);
@@ -66,46 +49,6 @@ const UserComp = ({ user }: TProps) => {
     target: { checked },
   }: ChangeEvent<HTMLInputElement>) => {
     setChecked(checked);
-<<<<<<< HEAD
-    // try {
-    //   const updatedCategory: Partial<ICategory> = {
-    //     pk,
-    //     sk,
-    //     hidden: checked,
-    //     updated: new Date().toISOString(),
-    //   };
-    //   await updateItem(updatedCategory);
-    //   await queryClient.refetchQueries({ queryKey: [etype] });
-    // } catch (error) {
-    //   console.debug('Category could not be updated', error);
-    //   toast.error(`Category could not be updated`);
-    // }
-  };
-
-  const handleDelete = async () => {
-    console.log('handleDelete');
-    // try {
-    //   const urlDeleteParam: IURLDeleteParams = {
-    //     pk,
-    //     sk,
-    //   };
-
-    //   await deleteItems(urlDeleteParam);
-    //   toast.success('Category removed');
-    //   await queryClient.refetchQueries({ queryKey: [etype] });
-    //   await queryClient.invalidateQueries({
-    //     queryKey: ['categories_selector'],
-    //   });
-    // } catch (error) {
-    //   console.debug('Error while deleting: ', error);
-    //   toast.error('Error while deleting. Try later');
-    // }
-  };
-
-  const handleConfirmDelete = () => {
-    console.log('handleConfirmDelete');
-    // setOpenConfirmationDialog(true);
-=======
     try {
       // Mapping form data to GraphQL input
       const input: TProfileFormValues = {
@@ -152,7 +95,6 @@ const UserComp = ({ user }: TProps) => {
 
   const handleConfirmDelete = () => {
     setOpenConfirmationDialog(true);
->>>>>>> feature/amplify
   };
 
   const handleSetUpdateCategory = () => {
@@ -170,11 +112,7 @@ const UserComp = ({ user }: TProps) => {
     <>
       <ConfirmationDialog
         title="Removing"
-<<<<<<< HEAD
-        message="Are you sure to remove the category?"
-=======
         message={`Are you sure to remove the user: ${name}?`}
->>>>>>> feature/amplify
         open={openConfirmationDialog}
         onOpen={setOpenConfirmationDialog}
         onAccept={handleDelete}
@@ -205,11 +143,7 @@ const UserComp = ({ user }: TProps) => {
                 arrow
               >
                 <Switch
-<<<<<<< HEAD
-                  id={`switch-hidden-${user.status}`}
-=======
                   id={`switch-hidden-${user.enabled}`}
->>>>>>> feature/amplify
                   checked={checked}
                   onChange={handleOnChangeChecked}
                 />

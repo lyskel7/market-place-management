@@ -13,11 +13,7 @@ interface IUseAvatarUrlResult {
 }
 
 const useAvatarUrl = (): IUseAvatarUrlResult => {
-<<<<<<< HEAD
-  const { userInfo, hasPicture } = useAuthStore();
-=======
   const { userInfo } = useAuthStore();
->>>>>>> feature/amplify
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
@@ -28,12 +24,7 @@ const useAvatarUrl = (): IUseAvatarUrlResult => {
   const fetchUrl = useCallback(
     async (showLoading = false) => {
       console.log('user info: ', userInfo);
-<<<<<<< HEAD
-      console.log('has picture: ', hasPicture);
-      if (!userInfo || !hasPicture) {
-=======
       if (!userInfo || userInfo.picture === 'false') {
->>>>>>> feature/amplify
         setAvatarUrl(null);
         setError(null);
         setIsLoading(false);
@@ -41,11 +32,7 @@ const useAvatarUrl = (): IUseAvatarUrlResult => {
       }
 
       if (showLoading) setIsLoading(true); // Mostrar loading solo si se pide
-<<<<<<< HEAD
-      setError(null); // Limpiar error anterior
-=======
       setError(null);
->>>>>>> feature/amplify
 
       try {
         const inputGet: GetUrlWithPathInput = {
@@ -68,11 +55,7 @@ const useAvatarUrl = (): IUseAvatarUrlResult => {
         if (showLoading) setIsLoading(false);
       }
     },
-<<<<<<< HEAD
-    [hasPicture, userInfo],
-=======
     [userInfo],
->>>>>>> feature/amplify
   );
 
   useEffect(() => {
