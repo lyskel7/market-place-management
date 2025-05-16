@@ -17,7 +17,6 @@ const useFetcherCognitoUsers = () => {
       if (!response) {
         throw new Error('Failed to fetch data: internalData is null');
       }
-      // console.log('internalData: ', internalData);
       return response;
     },
     staleTime: 120000,

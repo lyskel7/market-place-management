@@ -1,7 +1,7 @@
 'use client';
 
 import useAvatarUrl from '@/lib/hooks/useAvatarUrl';
-import { TAuthStore, useAuthStore } from '@/lib/stores/authStore';
+import { useAuthStore } from '@/lib/stores/authStore';
 import {
   fetchAuthSession,
   updateUserAttribute,
@@ -23,7 +23,6 @@ import {
 import { uploadData, UploadDataWithPathInput } from 'aws-amplify/storage';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useShallow } from 'zustand/react/shallow';
 
 const AvatarUploaderComp = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -31,14 +30,17 @@ const AvatarUploaderComp = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const { userInfo, notifyAvatarUpdate, setUserInfo } = useAuthStore(
-    useShallow((state: TAuthStore) => ({
-      notifyAvatarUpdate: state.notifyAvatarUpdate,
-      userInfo: state.userInfo,
-      setUserInfo: state.setUserInfo,
-      // setHasPicture: state.setHasPicture,
-    })),
-  );
+  // const { userInfo, notifyAvatarUpdate, setUserInfo } = useAuthStore(
+  //   useShallow((state: TAuthStore) => ({
+  //     notifyAvatarUpdate: state.notifyAvatarUpdate,
+  //     userInfo: state.userInfo,
+  //     setUserInfo: state.setUserInfo,
+  //     // setHasPicture: state.setHasPicture,
+  //   })),
+  // );
+  const userInfo = useAuthStore((state) => state.userInfo);
+  const notifyAvatarUpdate = useAuthStore((state) => state.notifyAvatarUpdate);
+  const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const {
     avatarUrl,
     refreshUrl,
@@ -106,8 +108,6 @@ const AvatarUploaderComp = () => {
       console.log('Forcing token refresh after avatar update...');
       await fetchAuthSession({ forceRefresh: true });
       console.log('Tokens refreshed successfully after avatar update.');
-
-      toast.success('Avatar URL saved to profile.');
     } catch (error) {
       console.error('Error updating user attribute "picture":', error);
       toast.error('Could not save the new avatar URL to your profile.');

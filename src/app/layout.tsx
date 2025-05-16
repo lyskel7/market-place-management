@@ -4,22 +4,17 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ReactNode, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { useHydrateAuth } from '@/lib/hooks/useHydrateAuth';
-import { configureAmplify } from '@/lib/amplify/amplify';
-import { ClientAuthGuard } from '@/components/guards/ClientAuthGuard';
 import { ThemeProvider } from '@mui/material';
 import theme from '@/styles/theme';
 import AmplifyClientInitializer from '@/lib/amplify/AmplifyClientInitializer';
+import ClientAuthGuard from '@/components/guards/ClientAuthGuard';
 
-export default function RootLayout(props: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   const hydrateAuth = useHydrateAuth();
 
   useEffect(() => {
-    configureAmplify();
-  }, []);
-
-  useEffect(() => {
-    console.log('hydratando desde root');
     hydrateAuth();
+    console.log('hydratando desde root');
   }, [hydrateAuth]);
 
   return (
@@ -32,7 +27,7 @@ export default function RootLayout(props: { children: ReactNode }) {
           <ThemeProvider theme={theme}>
             <AppRouterCacheProvider options={{ enableCssLayer: true }}>
               <ReactQueryProviders>
-                <ClientAuthGuard>{props.children}</ClientAuthGuard>
+                <ClientAuthGuard>{children}</ClientAuthGuard>
                 <ToastContainer
                   position="top-right"
                   autoClose={3000}

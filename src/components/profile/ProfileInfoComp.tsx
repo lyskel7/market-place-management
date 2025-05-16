@@ -19,7 +19,14 @@ type TFormValues = {
 };
 
 const ProfileInfoComp = () => {
-  const { userInfo, setUserInfo } = useAuthStore();
+  const userInfo = useAuthStore((state) => state.userInfo);
+  const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  // const { userInfo, setUserInfo } = useAuthStore(
+  //   useShallow((state) => ({
+  //     userInfo: state.userInfo,
+  //     setUserInfo: state.setUserInfo,
+  //   })),
+  // );
   // const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   // const [isLoadingAvatar, setIsLoadingAvatar] = useState<boolean>(false);
   const { isMobile } = useResponsive();

@@ -1,48 +1,85 @@
 'use client';
 import { create } from 'zustand';
+import { SchemaType } from '../apis/amplifyDB';
+import { ERoles } from '../enums';
+import { isEqual } from 'lodash';
 
-interface IUserInfo {
+export interface IUserInfo {
   email?: string;
   name?: string;
   username?: string;
   picture?: string | null;
-  sub?: string;
+  id?: string;
   groups?: string[] | null;
 }
 
-export type TAuthStore = {
-  isAuthenticated: boolean;
-  isLoading: boolean;
+type TAuthStoreState = {
+  userRoles: ERoles[];
+  isHydrating: boolean;
   userInfo: IUserInfo | null;
   avatarUpdateTimestamp: number;
-  // hasPicture: boolean;
-  // setHasPicture: (hasPicture: boolean) => void;
-  notifyAvatarUpdate: () => void;
-  setAuthenticated: (auth: boolean) => void;
+  userForEdit: Partial<SchemaType> | null;
+};
+
+type TAuthStoreActions = {
+  setIsHydrating: (hydrating: boolean) => void;
   setUserInfo: (info: IUserInfo | null) => void;
-  setLoading: (loading: boolean) => void;
+  notifyAvatarUpdate: () => void;
+  setUserForEdit: (user: Partial<SchemaType> | null) => void;
   clearAuth: () => void;
 };
 
-export const useAuthStore = create<TAuthStore>()(
-  (set) => ({
-    isAuthenticated: false,
-    userRoles: [],
-    isLoading: true,
-    userInfo: null,
-    avatarUpdateTimestamp: Date.now(),
-    // hasPicture: false,
-    // setHasPicture: (hasPicture) => set({ hasPicture }),
+const initialState: TAuthStoreState = {
+  userRoles: [],
+  isHydrating: true,
+  userInfo: null,
+  avatarUpdateTimestamp: Date.now(),
+  userForEdit: null,
+};
+
+export const useAuthStore = create<TAuthStoreState & TAuthStoreActions>()(
+  (set, get) => ({
+    ...initialState,
     notifyAvatarUpdate: () => set({ avatarUpdateTimestamp: Date.now() }),
-    setAuthenticated: (auth) => set({ isAuthenticated: auth }),
-    setUserInfo: (info) => set({ userInfo: info }),
-    setLoading: (loading) => set({ isLoading: loading }),
-    clearAuth: () =>
-      set({
-        isAuthenticated: false,
-        isLoading: false,
-        userInfo: {},
-      }),
+    setUserInfo: (newUserInfo: IUserInfo | null) => {
+      const currentState = get(); // Obtener el estado actual
+      if (!isEqual(currentState.userInfo, newUserInfo)) {
+        // Compara profundamente
+        console.log('AuthStore: UserInfo DEEPLY changed, updating state.');
+        set({ userInfo: newUserInfo });
+      } else {
+        console.log(
+          'AuthStore: UserInfo is the same (deep compare), NO STATE UPDATE.',
+        );
+      }
+    },
+    // set((state) => {
+    //   console.log(
+    //     'AuthStore SET_USER_INFO: Current groups ref:',
+    //     state.userInfo?.groups,
+    //   );
+    //   console.log(
+    //     'AuthStore SET_USER_INFO: New groups ref from payload:',
+    //     newUserInfo?.groups,
+    //   );
+    //   if (!newUserInfo) {
+    //     return { ...state, userInfo: null };
+    //   }
+    //   return { ...state, userInfo: { ...newUserInfo } };
+    // }),
+    // set((state) => {
+    //   if (!isEqual(state.userInfo, newUserInfo)) {
+    //     console.log('AuthStore: UserInfo DEEPLY changed, updating.');
+    //     return { ...state, userInfo: newUserInfo };
+    //   }
+    //   console.log(
+    //     'AuthStore: UserInfo is the same (deep compare), no update.',
+    //   );
+    //   return {};
+    // }),
+    setIsHydrating: (isHydrating) => set({ isHydrating }),
+    setUserForEdit: (user) => set({ userForEdit: user }),
+    clearAuth: () => set(initialState),
   }),
   // {
   //   name: 'auth-storage', // localStorage key
@@ -55,42 +92,6 @@ export const useAuthStore = create<TAuthStore>()(
   // },
   // ),
 );
-
-// interface AuthState {
-//   isAuthenticated: boolean;
-//   isLoading: boolean;
-//   userRoles: string[] | null;
-//   hasHydrated: boolean;
-//   setAuthenticated: (value: boolean) => void;
-//   setLoading: (value: boolean) => void;
-//   setUserRoles: (roles: string[] | null) => void;
-//   setHasHydrated: (value: boolean) => void;
-// }
-
-// export const useAuthStore = create<AuthState>((set) => ({
-//   isAuthenticated: false,
-//   isLoading: true,
-//   userRoles: [],
-//   hasHydrated: false,
-//   setAuthenticated: (value) => set({ isAuthenticated: value }),
-//   setLoading: (value) => set({ isLoading: value }),
-//   setUserRoles: (roles) => set({ userRoles: roles }),
-//   setHasHydrated: (value) => set({ hasHydrated: value }),
-// }));
-
-// interface IAuthState {
-//   isLoading: boolean;
-//   isAuthenticated: boolean;
-//   userRoles: string[] | null;
-//   error: Error | null;
-//   checkAuthStatus: () => Promise<void>;
-//   clearAuthStatus: () => Promise<void>;
-//   // isAuthenticated: boolean;
-//   // roles: string[];
-//   isHydrated: boolean; // Nuevo flag para indicar si los datos fueron rehidratados
-//   // setAuth: (isAuthenticated: boolean, roles: string[]) => void;
-//   // setHydrated: (value: boolean) => void;
-// }
 
 // type TPersistedAuthState = Pick<IAuthState, 'isAuthenticated' | 'userRoles'>;
 

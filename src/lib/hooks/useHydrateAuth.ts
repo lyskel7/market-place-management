@@ -2,15 +2,21 @@
 import { fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 export const useHydrateAuth = () => {
-  const { setAuthenticated, setLoading, setUserInfo } = useAuthStore();
+  const { push } = useRouter();
+  const setIsHydrating = useAuthStore((state) => state.setIsHydrating);
+  const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  // const clearAuth = useAuthStore((state) => state.clearAuth);
 
   const hydrate = useCallback(async () => {
-    setLoading(true);
+    console.log('useHydrateAuth: HYDRATE FUNCTION CALLED');
+    setIsHydrating(true);
+    console.log('useHydrateAuth: checking session before fetch');
     try {
-      console.log('chicking before fetchsession');
       const session = await fetchAuthSession();
+      console.log('useHydrateAuth: session after fetchAuthSession:', session);
       const accessToken = session.tokens?.accessToken;
       const idTokenPayload = session.tokens?.idToken?.payload;
       console.log('session after fetchsession: ', session);
@@ -18,25 +24,31 @@ export const useHydrateAuth = () => {
         console.log('accessToken: ', accessToken?.payload);
         console.log('idtoken: ', idTokenPayload);
         const userAttr = await fetchUserAttributes();
-        setAuthenticated(true);
+        console.log(
+          'useHydrateAuth: Calling setIsAuthenticated(true) and setUserInfo',
+        );
         setUserInfo({
+          id: idTokenPayload?.sub as string,
           email: idTokenPayload?.email as string,
           name: idTokenPayload?.name as string,
-          groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
+          // groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
           picture: userAttr?.picture || 'false',
         });
         console.log('👌hydrato');
       } else {
-        setAuthenticated(false);
+        console.log(
+          'useHydrateAuth: No access token or ID token payload, calling clearAuth',
+        );
         setUserInfo(null);
       }
     } catch (err) {
       console.error('Error fetching auth session', err);
-      setAuthenticated(false);
+      console.log('useHydrateAuth: Error occurred, calling clearAuth');
       setUserInfo(null);
+      push('/errors');
     } finally {
-      setLoading(false);
+      setIsHydrating(false);
     }
-  }, [setLoading, setAuthenticated, setUserInfo]);
+  }, [setIsHydrating, setUserInfo, push]);
   return hydrate;
 };

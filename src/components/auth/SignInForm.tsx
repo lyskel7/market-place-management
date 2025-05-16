@@ -31,7 +31,7 @@ type TFormValues = {
 const SignInForm = () => {
   const [visibility, setVisibility] = useState(false);
   const hydrateAuth = useHydrateAuth();
-  const { isLoading } = useAuthStore();
+  const isLoading = useAuthStore((state) => state.isLoading);
   const [cognitoUserForPasswordChange, setCognitoUserForPasswordChange] =
     useState<SignInOutput | null>(null);
   const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);

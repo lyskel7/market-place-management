@@ -111,6 +111,13 @@
               "type": "String",
               "isRequired": false,
               "attributes": []
+            },
+            "groupName": {
+              "name": "groupName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
             }
           }
         }

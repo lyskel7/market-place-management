@@ -13,7 +13,7 @@ interface IUseAvatarUrlResult {
 }
 
 const useAvatarUrl = (): IUseAvatarUrlResult => {
-  const { userInfo } = useAuthStore();
+  const userInfo = useAuthStore((state) => state.userInfo);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);

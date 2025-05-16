@@ -1,17 +1,14 @@
 import {
-  CognitoIdentityProviderClient,
-  AdminCreateUserCommand,
   AdminAddUserToGroupCommand,
+  AdminCreateUserCommand,
+  DeliveryMediumType,
   ListUsersCommand,
   MessageActionType,
-  DeliveryMediumType,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { AppSyncResolverHandler } from 'aws-lambda';
-import { Schema } from '../../data/resource';
+import { cognitoClient, UserOutputType, userPoolId } from '../shared/types';
+import { handleLambdaError } from '../shared/manageErrors';
 
-const cognitoClient = new CognitoIdentityProviderClient({});
-const userPoolId = process.env.AMPLIFY_AUTH_USERPOOL_ID;
-type UserOutputType = Schema['UsersResponse']['type'];
 type TInput = {
   email: string;
   name: string;
@@ -141,10 +138,12 @@ export const handler: AppSyncResolverHandler<TInput, UserOutputType> = async (
     // Mapea la respuesta de Cognito al tipo User de GraphQL
     const userAttributes = createdUserResponse.User.Attributes || [];
 
-    const findAttr = (name: string) =>
-      userAttributes.find((attr) => attr.Name === name)?.Value;
+    const findAttr = (attrName: string): string | null => {
+      const attr = userAttributes.find((a) => a.Name === attrName)?.Value;
+      return attr !== undefined ? attr : null;
+    };
 
-    const responseUser = {
+    const responseUser: UserOutputType = {
       id: findAttr('sub'),
       email: findAttr('email'),
       name: findAttr('name'),
@@ -156,31 +155,9 @@ export const handler: AppSyncResolverHandler<TInput, UserOutputType> = async (
 
     return responseUser;
   } catch (error) {
-    console.error('Error creating users in Cognito:', error);
-    throw new Error(`Failed to create users: ${error as string}`);
-    // handleLambdaError(error, 'Creating user in Cognito');
-    // console.error('Error during Lambda execution:', error);
-    // if (error.name === 'UsernameExistsException') {
-    //   throw new Error(
-    //     `User with email ${email} already exists. Please use a different email.`,
-    //   );
-    // }
-    // if (error.name === 'InvalidParameterException') {
-    //   throw new Error(
-    //     `Invalid parameter provided: ${error.message}. Please check your input.`,
-    //   );
-    // }
-    // if (error.name === 'NotAuthorizedException') {
-    //   throw new Error(
-    //     `You are not authorized to perform this action. Please check your permissions.`,
-    //   );
-    // }
-    // if (error.name === 'ResourceNotFoundException') {
-    //   throw new Error(`User Pool not found. Please check your configuration.`);
-    // }
-    // // Generic error handling for client
-    // throw new Error(
-    //   `Failed to process request. Please check logs. Error type: ${error.name}`,
-    // );
+    handleLambdaError(error as Error, 'Creating user');
+    throw new Error(
+      'Control should not reach here if handleLambdaError throws.',
+    );
   }
 };

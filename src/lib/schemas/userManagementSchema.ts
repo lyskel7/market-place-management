@@ -3,7 +3,7 @@ import Joi from 'joi';
 type TUserManagementSchema = {
   email: string;
   username: string;
-  rol: string;
+  role: string;
 };
 
 export const userManagementSchema = Joi.object<TUserManagementSchema>({
@@ -17,8 +17,8 @@ export const userManagementSchema = Joi.object<TUserManagementSchema>({
   username: Joi.string().required().messages({
     'string.empty': 'User name is not allowed to be empty',
   }),
-  rol: Joi.string().required().messages({
-    'string.empty': 'Rol is not allowed to be empty',
+  role: Joi.string().required().messages({
+    'string.empty': 'Role is not allowed to be empty',
   }),
   // roles: Joi.array().items(Joi.string()).required(),
 });
