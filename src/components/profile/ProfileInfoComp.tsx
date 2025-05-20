@@ -26,8 +26,6 @@ const ProfileInfoComp = () => {
       setUserInfo: state.setUserInfo,
     })),
   );
-  // const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  // const [isLoadingAvatar, setIsLoadingAvatar] = useState<boolean>(false);
   const { isMobile } = useResponsive();
   const {
     handleSubmit,
@@ -40,7 +38,6 @@ const ProfileInfoComp = () => {
       username: userInfo?.name || '',
     },
   });
-  // console.log('the picture: ', userInfo?.picture);
   const handleReset = (username: string) => {
     reset({ username });
   };
@@ -73,43 +70,6 @@ const ProfileInfoComp = () => {
       toast.error(`Error updating profile info : ${error}`);
     }
   });
-
-  // // --- Función para obtener la URL fresca ---
-  // const fetchAndSetFreshAvatarUrl = async () => {
-  //   if (!userInfo) {
-  //     //No user, no avatar
-  //     setAvatarUrl(null);
-  //     return;
-  //   }
-
-  //   setIsLoadingAvatar(true);
-  //   setAvatarUrl(null); // Cleaning previous URL while loading
-  //   console.log('Fetching fresh avatar URL...');
-
-  //   try {
-  //     const getUrlInput: GetUrlWithPathInput = {
-  //       path: ({ identityId }) => `private/${identityId}/avatar`,
-  //       options: {
-  //         expiresIn: URL_EXPIRES_IN_SECONDS, // Generate valid URL for 1 hour
-  //         validateObjectExistence: false,
-  //       },
-  //     };
-  //     const result = await getUrl(getUrlInput);
-  //     console.info('Fresh avatar URL fetched:', result.url.toString());
-  //     setAvatarUrl(result.url.toString());
-  //   } catch (error) {
-  //     console.error('Error fetching avatar URL:', error);
-  //     setAvatarUrl(null); // If error do not show image
-  //     // Show default avatar
-  //   } finally {
-  //     setIsLoadingAvatar(false);
-  //   }
-  // };
-
-  // // --- useEffect para cargar la URL al montar o cuando userInfo cambie ---
-  // useEffect(() => {
-  //   fetchAndSetFreshAvatarUrl();
-  // }, [userInfo]);
 
   // useEffect(() => {
   //   console.log('Form Errors:', errors);
