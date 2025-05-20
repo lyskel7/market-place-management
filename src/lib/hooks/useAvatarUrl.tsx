@@ -17,9 +17,6 @@ const useAvatarUrl = (): IUseAvatarUrlResult => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-  // const [currentAvatarUrl, setCurrentAvatarUrl] = useState('');
-  // const [refreshedPath, setRefreshedPath] = useState('');
-  // const [refreshing, setRefreshing] = useState(false);
 
   const fetchUrl = useCallback(
     async (showLoading = false) => {

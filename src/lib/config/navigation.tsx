@@ -12,7 +12,7 @@ import { TNavigationPages } from '../interfaces';
 
 const DASHBOARD: NavigationItem[] = [
   {
-    segment: 'dashboard',
+    segment: '',
     title: 'Dashboard',
     icon: <DashboardIcon />,
   },
@@ -22,22 +22,22 @@ const CLASSIFIER: NavigationItem[] = [
   { kind: 'divider' },
   { kind: 'header', title: 'Classifier' },
   {
-    segment: 'dashboard/categories',
+    segment: 'categories',
     title: 'Categories',
     icon: <ClassIcon />,
   },
   {
-    segment: 'dashboard/subcategories',
+    segment: 'subcategories',
     title: 'Subcategories',
     icon: <TurnedInIcon />,
   },
   {
-    segment: 'dashboard/variations',
+    segment: 'variations',
     title: 'Variations',
     icon: <WysiwygIcon />,
   },
   {
-    segment: 'dashboard/attributes',
+    segment: 'attributes',
     title: 'Attributes',
     icon: <FormatShapesIcon />,
   },
@@ -47,7 +47,7 @@ const STATS: NavigationItem[] = [
   { kind: 'divider' },
   { kind: 'header', title: 'Stats' },
   {
-    segment: 'dashboard/stats',
+    segment: 'stats',
     title: 'Stats',
     icon: <BarChartIcon />,
   },
@@ -57,12 +57,12 @@ const PROFILE: NavigationItem[] = [
   { kind: 'divider' },
   { kind: 'header', title: 'Profile' },
   {
-    segment: 'dashboard/profile/password',
+    segment: 'profile/password',
     title: 'Change password',
     icon: <PinIcon />,
   },
   {
-    segment: 'dashboard/profile/info',
+    segment: 'profile/info',
     title: 'Profile info',
     icon: <BadgeIcon />,
   },
@@ -72,22 +72,22 @@ const USER: NavigationItem[] = [
   { kind: 'divider' },
   { kind: 'header', title: 'Users management' },
   {
-    segment: 'dashboard/users',
+    segment: 'users',
     title: 'Users',
     icon: <GroupIcon />,
   },
 ];
 
 export const BRANDING: Branding = {
-  title: 'Dashboard',
+  title: 'My Dashboard',
 };
 
 export const allNavigationPages: TNavigationPages[] = [
-  { id: 'dashboard', component: DASHBOARD, path: '/' },
-  { id: 'classifier', component: CLASSIFIER, path: '/classifier' },
-  { id: 'stats', component: STATS, path: '/stats' },
-  { id: 'profile', component: PROFILE, path: '/profile' },
-  { id: 'user', component: USER, path: '/user' },
+  { id: 'dashboard', component: DASHBOARD, path: '' },
+  { id: 'classifier', component: CLASSIFIER, path: 'classifier' },
+  { id: 'stats', component: STATS, path: 'stats' },
+  { id: 'profile', component: PROFILE, path: 'profile' },
+  { id: 'user', component: USER, path: 'user' },
 ];
 
 export const pagePermissions: { [key: string]: string[] } = {

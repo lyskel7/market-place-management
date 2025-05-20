@@ -1,7 +1,6 @@
 'use client';
 import { Amplify } from 'aws-amplify';
 import output from '../../../amplify_outputs.json';
-// import awsExports from '@/aws-exports';
 
 let isConfigured = false;
 

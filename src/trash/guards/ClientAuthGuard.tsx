@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/lib/stores/authStore';
 import { usePathname } from 'next/navigation';
 import { isValidElement, ReactNode, useEffect } from 'react';
-import SplashScreen from '../common/loaders/SplashScreen';
+import SplashScreen from '../../components/common/loaders/SplashScreen';
 
 const ClientAuthGuard = ({ children }: { children: ReactNode }) => {
   // const router = useRouter();

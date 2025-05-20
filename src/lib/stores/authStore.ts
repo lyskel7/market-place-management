@@ -16,6 +16,7 @@ export interface IUserInfo {
 type TAuthStoreState = {
   userRoles: ERoles[];
   isHydrating: boolean;
+  isAuth: boolean;
   userInfo: IUserInfo | null;
   avatarUpdateTimestamp: number;
   userForEdit: Partial<SchemaType> | null;
@@ -24,14 +25,16 @@ type TAuthStoreState = {
 type TAuthStoreActions = {
   setIsHydrating: (hydrating: boolean) => void;
   setUserInfo: (info: IUserInfo | null) => void;
+  setIsAuth: (isAuth: boolean) => void;
   notifyAvatarUpdate: () => void;
   setUserForEdit: (user: Partial<SchemaType> | null) => void;
-  clearAuth: () => void;
+  clearAuth: () => void; //For logout
 };
 
 const initialState: TAuthStoreState = {
   userRoles: [],
-  isHydrating: true,
+  isHydrating: false,
+  isAuth: false,
   userInfo: null,
   avatarUpdateTimestamp: Date.now(),
   userForEdit: null,
@@ -42,9 +45,9 @@ export const useAuthStore = create<TAuthStoreState & TAuthStoreActions>()(
     ...initialState,
     notifyAvatarUpdate: () => set({ avatarUpdateTimestamp: Date.now() }),
     setUserInfo: (newUserInfo: IUserInfo | null) => {
-      const currentState = get(); // Obtener el estado actual
-      if (!isEqual(currentState.userInfo, newUserInfo)) {
-        // Compara profundamente
+      const currentUserInfo = get().userInfo; // Getting current state
+      if (!isEqual(currentUserInfo, newUserInfo)) {
+        // Deeply comparison
         console.log('AuthStore: UserInfo DEEPLY changed, updating state.');
         set({ userInfo: newUserInfo });
       } else {
@@ -53,31 +56,8 @@ export const useAuthStore = create<TAuthStoreState & TAuthStoreActions>()(
         );
       }
     },
-    // set((state) => {
-    //   console.log(
-    //     'AuthStore SET_USER_INFO: Current groups ref:',
-    //     state.userInfo?.groups,
-    //   );
-    //   console.log(
-    //     'AuthStore SET_USER_INFO: New groups ref from payload:',
-    //     newUserInfo?.groups,
-    //   );
-    //   if (!newUserInfo) {
-    //     return { ...state, userInfo: null };
-    //   }
-    //   return { ...state, userInfo: { ...newUserInfo } };
-    // }),
-    // set((state) => {
-    //   if (!isEqual(state.userInfo, newUserInfo)) {
-    //     console.log('AuthStore: UserInfo DEEPLY changed, updating.');
-    //     return { ...state, userInfo: newUserInfo };
-    //   }
-    //   console.log(
-    //     'AuthStore: UserInfo is the same (deep compare), no update.',
-    //   );
-    //   return {};
-    // }),
     setIsHydrating: (isHydrating) => set({ isHydrating }),
+    setIsAuth: (isAuth) => set({ isAuth }),
     setUserForEdit: (user) => set({ userForEdit: user }),
     clearAuth: () => set(initialState),
   }),

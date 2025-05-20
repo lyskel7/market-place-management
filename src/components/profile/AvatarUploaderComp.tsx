@@ -1,5 +1,6 @@
 'use client';
 
+import { MAXSIZEMB } from '@/lib/constants/frontend';
 import useAvatarUrl from '@/lib/hooks/useAvatarUrl';
 import { useAuthStore } from '@/lib/stores/authStore';
 import {
@@ -30,14 +31,6 @@ const AvatarUploaderComp = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  // const { userInfo, notifyAvatarUpdate, setUserInfo } = useAuthStore(
-  //   useShallow((state: TAuthStore) => ({
-  //     notifyAvatarUpdate: state.notifyAvatarUpdate,
-  //     userInfo: state.userInfo,
-  //     setUserInfo: state.setUserInfo,
-  //     // setHasPicture: state.setHasPicture,
-  //   })),
-  // );
   const userInfo = useAuthStore((state) => state.userInfo);
   const notifyAvatarUpdate = useAuthStore((state) => state.notifyAvatarUpdate);
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
@@ -51,6 +44,7 @@ const AvatarUploaderComp = () => {
   const combinedIsLoading = isUploading || isLoadingUrl;
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    console.info('netrando en el change');
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
@@ -59,10 +53,9 @@ const AvatarUploaderComp = () => {
         setPreviewUrl(null);
         return;
       }
-      // File size limit (ex.: 5MB)
-      const maxSizeMB = 5;
-      if (file.size > maxSizeMB * 1024 * 1024) {
-        setUploadError(`File size exceeds ${maxSizeMB}MB limit.`);
+      // File size limit 5MB)
+      if (file.size > MAXSIZEMB) {
+        setUploadError(`File size exceeds ${MAXSIZEMB / 1024 / 1024}MB limit.`);
         setSelectedFile(null);
         setPreviewUrl(null);
         return;
@@ -72,8 +65,9 @@ const AvatarUploaderComp = () => {
       setUploadError(null);
     } else {
       setSelectedFile(null);
-      setPreviewUrl(null);
+      // setPreviewUrl(null);
     }
+    event.target.value = '';
   };
 
   const handleHasProfilePictureUpdate = async (newS3Url: string) => {
@@ -149,6 +143,12 @@ const AvatarUploaderComp = () => {
       notifyAvatarUpdate();
       toast.success('Avatar uploaded successfully!');
       setSelectedFile(null);
+      const fileInput = document.getElementById(
+        'avatar-upload-input',
+      ) as HTMLInputElement | null;
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } catch (error) {
       console.error('Error uploading avatar:', error);
       const errorMessage =
@@ -164,18 +164,30 @@ const AvatarUploaderComp = () => {
   };
 
   const handleCancel = () => {
+    if (selectedFile && previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setSelectedFile(null);
-    setPreviewUrl(null); // Returning to oiginal url
+    // setPreviewUrl(avatarUrl || ''); // Returning to oiginal url
     setUploadError(null);
+
+    const fileInput = document.getElementById(
+      'avatar-upload-input',
+    ) as HTMLInputElement | null;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   useEffect(() => {
+    // console.warn('disparado effect post cancel');
     let objectUrl: string | null = null;
     if (selectedFile) {
       objectUrl = URL.createObjectURL(selectedFile);
       setPreviewUrl(objectUrl);
       setUploadError(null); // Cleaning error after choice a new file
     } else {
+      // console.warn('disparado reiniciando preview');
       setPreviewUrl(avatarUrl || null);
     }
 
