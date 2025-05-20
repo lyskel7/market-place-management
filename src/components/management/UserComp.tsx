@@ -1,6 +1,6 @@
 'use client';
 import useResponsive from '@/lib/hooks/useResponsive';
-import { TProfileFormValues } from '@/lib/interfaces';
+import { TProfileValues } from '@/lib/interfaces';
 import { generateClient } from '@aws-amplify/api';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -16,6 +16,7 @@ import {
   ListItemText,
   Switch,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -23,6 +24,7 @@ import { Schema } from '../../../amplify/data/resource';
 import ConfirmationDialog from '../common/ConfirmationDialog';
 import { IInputForDeleteUser, SchemaType } from '@/lib/apis/amplifyDB';
 import { useDeleteUserOptimisticMutation } from '@/lib/hooks/useDeleteCognitoUserMutation';
+import { useAuthStore } from '@/lib/stores/authStore';
 
 const client = generateClient<Schema>({
   authMode: 'userPool',
@@ -34,12 +36,17 @@ type TProps = {
 };
 
 const UserComp = ({ user }: TProps) => {
-  const { email, name, enabled } = user;
+  const { email, name, enabled, groupName, id } = user;
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
   const { isMobile } = useResponsive();
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState(enabled ?? true);
   const deleteMutation = useDeleteUserOptimisticMutation();
+  const setUserForEdit = useAuthStore((state) => state.setUserForEdit);
+  const userInfo = useAuthStore((state) => state.userInfo);
+
+  console.log('user sub: ', userInfo?.id);
+  console.log('user id: ', id);
 
   const handleClick = () => {
     setOpen(!open);
@@ -51,7 +58,7 @@ const UserComp = ({ user }: TProps) => {
     setChecked(checked);
     try {
       // Mapping form data to GraphQL input
-      const input: TProfileFormValues = {
+      const input: TProfileValues = {
         email: email || '',
         name: name || '',
         enabled: checked,
@@ -83,7 +90,6 @@ const UserComp = ({ user }: TProps) => {
   };
 
   const handleDelete = async () => {
-    console.log('Deleting user');
     // Mapping form data to GraphQL input
     const input: IInputForDeleteUser = {
       email: email || '',
@@ -98,8 +104,8 @@ const UserComp = ({ user }: TProps) => {
   };
 
   const handleSetUpdateCategory = () => {
-    // setItemForEdit(category);
-    // setIsUpdating(true);
+    console.log('user: ', user);
+    setUserForEdit(user);
   };
 
   useEffect(() => {
@@ -137,52 +143,74 @@ const UserComp = ({ user }: TProps) => {
               justifyContent={'space-between'}
               alignItems={'center'}
             >
-              <Tooltip
-                title={checked ? 'Enabled' : 'Disabled'}
-                placement="left-end"
-                arrow
-              >
-                <Switch
-                  id={`switch-hidden-${user.enabled}`}
-                  checked={checked}
-                  onChange={handleOnChangeChecked}
-                />
-              </Tooltip>
-
-              <Tooltip
-                title={'Edit'}
-                placement="top"
-                arrow
-              >
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  onClick={handleSetUpdateCategory}
+              {userInfo?.id === id ? (
+                <Typography
+                  variant="subtitle1"
+                  fontStyle={'italic'}
                 >
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
+                  {'My self - No operations'}
+                </Typography>
+              ) : (
+                <>
+                  <Tooltip
+                    title={checked ? 'Enabled' : 'Disabled'}
+                    placement="left-end"
+                    arrow
+                  >
+                    <Switch
+                      id={`switch-hidden-${user.enabled}`}
+                      checked={checked}
+                      onChange={handleOnChangeChecked}
+                    />
+                  </Tooltip>
 
-              <Tooltip
-                title={'Delete'}
-                placement="top"
-                arrow
-              >
-                <IconButton
-                  onClick={handleConfirmDelete}
-                  edge="end"
-                  aria-label="delete"
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+                  <Tooltip
+                    title={'Edit'}
+                    placement="top"
+                    arrow
+                  >
+                    <IconButton
+                      edge="end"
+                      aria-label="edit"
+                      onClick={handleSetUpdateCategory}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip
+                    title={'Delete'}
+                    placement="top"
+                    arrow
+                  >
+                    <IconButton
+                      onClick={handleConfirmDelete}
+                      edge="end"
+                      aria-label="delete"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
             </Box>
           )
         }
       >
         <ListItemText
           primary={name}
-          secondary={email}
+          secondary={
+            <>
+              <Typography
+                component="span"
+                variant="body2"
+                sx={{ color: 'text.primary', display: 'inline' }}
+              >
+                {email}
+              </Typography>
+              {`  —  ${groupName?.at(0)}${groupName?.slice(1).toLowerCase()}`}
+            </>
+          }
         />
       </ListItem>
       {isMobile && (
@@ -196,14 +224,25 @@ const UserComp = ({ user }: TProps) => {
             disablePadding
           >
             <ListItem sx={{ pl: 4 }}>
-              <Switch checked={enabled ?? false} />
-              <Button startIcon={<EditIcon />}>Edit</Button>
-              <Button
-                startIcon={<DeleteIcon />}
-                onClick={handleConfirmDelete}
-              >
-                Delete
-              </Button>
+              {userInfo?.id === id ? (
+                <Typography
+                  variant="subtitle1"
+                  fontStyle={'italic'}
+                >
+                  {'My self - No operations'}
+                </Typography>
+              ) : (
+                <>
+                  <Switch checked={enabled ?? false} />
+                  <Button startIcon={<EditIcon />}>Edit</Button>
+                  <Button
+                    startIcon={<DeleteIcon />}
+                    onClick={handleConfirmDelete}
+                  >
+                    Delete
+                  </Button>
+                </>
+              )}
             </ListItem>
           </List>
         </Collapse>

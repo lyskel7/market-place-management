@@ -2,19 +2,16 @@
 import { useHydrateAuth } from '@/lib/hooks/useHydrateAuth';
 import useResponsive from '@/lib/hooks/useResponsive';
 import { authSchema } from '@/lib/schemas';
-import { useAuthStore } from '@/lib/stores/authStore';
 import { joiResolver } from '@hookform/resolvers/joi';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {
-  Backdrop,
   Box,
   Button,
   CircularProgress,
   IconButton,
   TextField,
   Typography,
-  useTheme,
 } from '@mui/material';
 import type { SignInOutput } from 'aws-amplify/auth';
 import { signIn, signOut } from 'aws-amplify/auth';
@@ -31,13 +28,12 @@ type TFormValues = {
 const SignInForm = () => {
   const [visibility, setVisibility] = useState(false);
   const hydrateAuth = useHydrateAuth();
-  const { isLoading } = useAuthStore();
   const [cognitoUserForPasswordChange, setCognitoUserForPasswordChange] =
     useState<SignInOutput | null>(null);
   const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
   const [cognitoUser, setCognitoUser] = useState('');
   const { isMobile } = useResponsive();
-  const theme = useTheme();
+  // const theme = useTheme();
   const {
     register,
     reset,
@@ -85,7 +81,7 @@ const SignInForm = () => {
     setVisibility((prev) => !prev);
   };
 
-  const isLoadingCombined = isSubmitting || isLoading;
+  const isLoadingCombined = isSubmitting;
 
   if (showNewPasswordForm) {
     return (
@@ -108,9 +104,8 @@ const SignInForm = () => {
   } else {
     return (
       <>
-        {isLoading && (
-          <Backdrop
-            open={isLoading}
+        {/* <Backdrop
+            open={}
             sx={{
               backgroundColor: theme.palette.background.paper,
               color:
@@ -135,8 +130,8 @@ const SignInForm = () => {
                 Signing in...
               </Typography>
             </Box>
-          </Backdrop>
-        )}
+          </Backdrop> */}
+
         <form onSubmit={handleOnSubmit}>
           <Box
             width={isMobile ? '98%' : 1}

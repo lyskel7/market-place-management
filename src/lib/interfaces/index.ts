@@ -1,6 +1,7 @@
 import * as MuiIcons from '@mui/icons-material';
 import { ETypes } from '../enums';
 import type { AuthSession, SignInOutput } from 'aws-amplify/auth';
+import { Navigation } from '@toolpad/core/AppProvider';
 
 export interface ISingleTable {
   pk: string;
@@ -84,10 +85,17 @@ export type TPasswordFormValues = {
   oldPassword?: string;
 };
 
-export type TProfileFormValues = {
+export type TProfileValues = {
   email: string;
   name: string;
   groupName?: string;
+  id?: string;
   profilePicture?: string;
   enabled?: boolean;
+};
+
+export type TNavigationPages = {
+  id: string;
+  component: Navigation;
+  path: string;
 };
