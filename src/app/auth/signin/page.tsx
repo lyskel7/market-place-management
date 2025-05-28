@@ -1,20 +1,36 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { SignInPage } from '@toolpad/core/SignInPage';
-import type { AuthProvider } from '@toolpad/core';
-import { useRouter } from 'next/navigation';
-import handleSignInClient from './action';
-import { AppProvider } from '@toolpad/core/AppProvider';
-import { useTheme } from '@mui/material/styles';
+import ImageLoaderApp from '@/components/auth/ImageLoaderApp';
+import { useAuthStore } from '@/lib/stores/authStore';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Alert from '@mui/material/Alert';
 import FormControl from '@mui/material/FormControl';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import Visibility from '@mui/icons-material/Visibility';
-import { useAuthStore } from '@/lib/stores/authStore';
+import { useTheme } from '@mui/material/styles';
+import type { AuthProvider } from '@toolpad/core';
+import { AppProvider } from '@toolpad/core/AppProvider';
+import { SignInPage } from '@toolpad/core/SignInPage';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import handleSignInClient from './action';
+
+// function getCookie(name: string): string | null {
+//   if (typeof document === 'undefined') {
+//     return null; // No estamos en el navegador
+//   }
+//   const nameEQ = name + '=';
+//   const ca = document.cookie.split(';');
+//   for (let i = 0; i < ca.length; i++) {
+//     let c = ca[i];
+//     while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+//     if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+//   }
+//   return null;
+// }
 
 const providers: AuthProvider[] = [
   {
@@ -37,7 +53,6 @@ function subtitle(error: string) {
 
 function customPasswordField() {
   const [showPassword, setShowPassword] = useState(false);
-
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   return (
@@ -84,26 +99,32 @@ const CustomSignInPage = () => {
   const theme = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const isAuthGlobal = useAuthStore((state) => state.isAuth);
+  const { openClosing, clearAuth } = useAuthStore(
+    useShallow((state) => ({
+      openClosing: state.openClosing,
+      clearAuth: state.clearAuth,
+    })),
+  );
 
   const toolpadCompatibleSignIn: (
     provider: AuthProvider,
     formData: FormData,
-  ) => void = async (
-    provider: AuthProvider,
-    formData: FormData,
-  ): Promise<void> => {
+  ) => void = async (provider, formData): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
     try {
       await handleSignInClient(provider, formData, {
         onSuccess: () => {
+          useAuthStore.setState({ openClosing: 'opening' });
           push('/');
         },
         onNewPasswordRequired: () => {
+          useAuthStore.setState({ openClosing: 'changing' });
+          const params = new URLSearchParams();
+          params.set('email', formData.get('email')?.toString() || '');
           setIsLoading(false);
-          push('/auth/change-password');
+          push(`/auth/change-password?${params}`);
         },
         onError: (message: string) => {
           setIsLoading(false);
@@ -118,21 +139,13 @@ const CustomSignInPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (isAuthGlobal && isLoading) {
-      // Si estábamos en estado de carga (isLoadingPage=true) porque hicimos submit,
-      // y ahora el estado global isAuth es true (gracias al Hub y hydrate),
-      // significa que el proceso de autenticación global se completó.
-      // El AuthGuard debería estar manejando la redirección.
-      // Podemos quitar el estado de carga de *esta* página.
-      // Si el AuthGuard no redirige inmediatamente, el usuario podría ver brevemente
-      // el botón sin loader antes de que la navegación ocurra, lo cual es aceptable.
-      console.log(
-        'SignInPage useEffect: Global auth is true and page was loading. Resetting page loading state.',
-      );
-      setIsLoading(false);
-    }
-  }, [isAuthGlobal, isLoading]);
+  if (openClosing === 'opening') {
+    return <ImageLoaderApp imageStock="opening" />;
+  }
+
+  if (openClosing === 'changing') {
+    return <ImageLoaderApp imageStock="changing" />;
+  }
 
   return (
     <AppProvider theme={theme}>

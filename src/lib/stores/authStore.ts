@@ -4,6 +4,8 @@ import { SchemaType } from '../apis/amplifyDB';
 import { ERoles } from '../enums';
 import { isEqual } from 'lodash';
 
+export type TOpenCloseApp = 'opening' | 'closing' | 'changing' | 'none';
+
 export interface IUserInfo {
   email?: string;
   name?: string;
@@ -15,6 +17,7 @@ export interface IUserInfo {
 
 type TAuthStoreState = {
   userRoles: ERoles[];
+  openClosing: TOpenCloseApp;
   isHydrating: boolean;
   isAuth: boolean;
   userInfo: IUserInfo | null;
@@ -38,6 +41,7 @@ const initialState: TAuthStoreState = {
   userInfo: null,
   avatarUpdateTimestamp: Date.now(),
   userForEdit: null,
+  openClosing: 'none',
 };
 
 export const useAuthStore = create<TAuthStoreState & TAuthStoreActions>()(
@@ -59,7 +63,12 @@ export const useAuthStore = create<TAuthStoreState & TAuthStoreActions>()(
     setIsHydrating: (isHydrating) => set({ isHydrating }),
     setIsAuth: (isAuth) => set({ isAuth }),
     setUserForEdit: (user) => set({ userForEdit: user }),
-    clearAuth: () => set(initialState),
+    clearAuth: () => {
+      set({
+        ...initialState,
+        openClosing: 'closing',
+      });
+    },
   }),
   // {
   //   name: 'auth-storage', // localStorage key

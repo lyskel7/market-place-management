@@ -15,6 +15,7 @@ export const getItems = async <T>(
   const resp = await AxiosWrapper.getInstance().get<IPaginatedResult<T>>(
     `/items?${parsedUrl}`,
   );
+  console.log('los items: ', resp);
   return resp;
 };
 

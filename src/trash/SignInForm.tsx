@@ -14,11 +14,10 @@ import {
   Typography,
 } from '@mui/material';
 import type { SignInOutput } from 'aws-amplify/auth';
-import { signIn, signOut } from 'aws-amplify/auth';
+import { signIn } from 'aws-amplify/auth';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import NewPasswordForm from './NewPasswordForm';
 
 type TFormValues = {
   email: string;
@@ -85,21 +84,22 @@ const SignInForm = () => {
 
   if (showNewPasswordForm) {
     return (
-      <NewPasswordForm
-        cognitoUser={cognitoUser}
-        cognitoUserForPasswordChange={cognitoUserForPasswordChange}
-        onPasswordChanged={async () => {
-          setShowNewPasswordForm(false);
-          setCognitoUserForPasswordChange(null);
-          await signOut();
-          reset();
-        }}
-        onCancel={() => {
-          // Come back to login when cancel
-          setShowNewPasswordForm(false);
-          setCognitoUserForPasswordChange(null);
-        }}
-      />
+      <></>
+      // <NewPasswordForm
+      //   cognitoUser={cognitoUser}
+      //   cognitoUserForPasswordChange={cognitoUserForPasswordChange}
+      //   onPasswordChanged={async () => {
+      //     setShowNewPasswordForm(false);
+      //     setCognitoUserForPasswordChange(null);
+      //     await signOut();
+      //     reset();
+      //   }}
+      //   onCancel={() => {
+      //     // Come back to login when cancel
+      //     setShowNewPasswordForm(false);
+      //     setCognitoUserForPasswordChange(null);
+      //   }}
+      // />
     );
   } else {
     return (
