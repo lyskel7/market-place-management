@@ -8,6 +8,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { ERoles } from '@/lib/enums';
+import { useAuthStore } from '@/lib/stores/authStore';
 import MuiIconRender from './MuiIconRender';
 
 type TProps = {
@@ -20,15 +22,23 @@ type TProps = {
 
 const DashboardCard = (props: TProps) => {
   const { goto, title, body, iconName, count } = props;
-  const router = useRouter();
+  const userInfo = useAuthStore((state) => state.userInfo);
+  const { push } = useRouter();
+
+  const handleOnClick = () => {
+    if (userInfo?.groups?.[0] !== ERoles.VIEWERS) {
+      push(goto);
+    }
+  };
 
   return (
     <Card sx={{ width: 345, borderRadius: 3, height: 150 }}>
       <CardHeader
         action={
           <IconButton
+            disabled={userInfo?.groups?.[0] === ERoles.VIEWERS}
             aria-label="categories"
-            onClick={() => router.push(goto)}
+            onClick={handleOnClick}
           >
             <MuiIconRender iconName={iconName} />
           </IconButton>

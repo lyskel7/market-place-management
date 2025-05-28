@@ -1,22 +1,15 @@
-import type { AppSyncResolverHandler } from 'aws-lambda';
 import {
-  CognitoIdentityProviderClient,
   ListUsersCommand,
   ListUsersCommandInput,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { Schema } from '../../data/resource';
-
-const cognitoClient = new CognitoIdentityProviderClient({});
-const userPoolId = process.env.AMPLIFY_AUTH_USERPOOL_ID;
-type UserOutputType = Schema['UsersResponse']['type'];
+import type { AppSyncResolverHandler } from 'aws-lambda';
+import { cognitoClient, UserOutputType, userPoolId } from '../shared/types';
+import { handleLambdaError } from '../shared/manageErrors';
+import { gettinUserGroups } from '../shared/manageGroups';
 
 export const handler: AppSyncResolverHandler<null, UserOutputType[]> = async (
   event,
 ) => {
-  // Ajusta el tipo de Handler según cómo vas a invocar esta función.
-  // Si es un resolver de AppSync: import type { AppSyncResolverHandler } from 'aws-lambda';
-  // export const handler: AppSyncResolverHandler<any, UserOutput[]> = async (event) => { ... }
-  // Si es genérica o llamada desde API Gateway, Handler está bien.
   console.log(`EVENT: ${JSON.stringify(event)}`);
 
   if (!userPoolId) {
@@ -39,20 +32,25 @@ export const handler: AppSyncResolverHandler<null, UserOutputType[]> = async (
     const response = await cognitoClient.send(command);
 
     const users: UserOutputType[] = response.Users
-      ? response.Users.map((user) => {
-          const attributes = user.Attributes ?? [];
-          const getAttr = (name: string): string | undefined =>
-            attributes.find((attr) => attr.Name === name)?.Value ?? undefined;
-          return {
-            id: getAttr('sub'),
-            name: getAttr('name'),
-            email: getAttr('email'),
-            enabled: user.Enabled ?? undefined,
-            status: user.UserStatus,
-            createdAt: user.UserCreateDate?.toISOString() ?? undefined,
-            modifiedAt: user.UserLastModifiedDate?.toISOString() ?? undefined,
-          };
-        })
+      ? await Promise.all(
+          response.Users.map(async (user) => {
+            const attributes = user.Attributes ?? [];
+            const getAttr = (name: string): string | undefined =>
+              attributes.find((attr) => attr.Name === name)?.Value ?? undefined;
+            const groups = await gettinUserGroups(user.Username || '');
+            const userResult: UserOutputType = {
+              id: getAttr('sub'),
+              name: getAttr('name'),
+              email: getAttr('email'),
+              enabled: user.Enabled ?? undefined,
+              status: user.UserStatus,
+              groupName: groups[0],
+              createdAt: user.UserCreateDate?.toISOString() ?? undefined,
+              modifiedAt: user.UserLastModifiedDate?.toISOString() ?? undefined,
+            };
+            return userResult;
+          }),
+        )
       : [];
 
     console.log(`Successfully listed ${users.length} users.`);
@@ -62,7 +60,9 @@ export const handler: AppSyncResolverHandler<null, UserOutputType[]> = async (
     // If API Gateway, return an object with statusCode, body, etc.
     return users;
   } catch (error) {
-    console.error('Error listing users from Cognito:', error);
-    throw new Error(`Failed to list users: ${error as string}`);
+    handleLambdaError(error as Error, 'Getting user');
+    throw new Error(
+      'Control should not reach here if handleLambdaError throws.',
+    );
   }
 };

@@ -32,7 +32,7 @@ export const auth = defineAuth({
   },
   groups: ['ADMINS', 'EDITORS', 'VIEWERS'],
   access: (allow) => [
-    allow.resource(getUsers).to(['listUsers']),
+    allow.resource(getUsers).to(['listUsers', 'listGroupsForUser']),
     allow
       .resource(createUsers)
       .to(['createUser', 'listUsers', 'addUserToGroup']),
@@ -45,6 +45,9 @@ export const auth = defineAuth({
         'removeUserFromGroup',
         'updateUserAttributes',
         'getUser',
+        'listUsersInGroup',
+        'listGroupsForUser',
+        'addUserToGroup',
       ]),
     allow
       .resource(deleteUsers)

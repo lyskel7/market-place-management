@@ -1,46 +1,20 @@
-'use client';
-import ReactQueryProviders from '@/lib/provider/reactqueryProvider';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
-import { ReactNode, useEffect } from 'react';
-import { ToastContainer } from 'react-toastify';
-import { useHydrateAuth } from '@/lib/hooks/useHydrateAuth';
-import { configureAmplify } from '@/lib/amplify/amplify';
-import { ClientAuthGuard } from '@/components/guards/ClientAuthGuard';
-import { ThemeProvider } from '@mui/material';
+import AmplifyClientInitializer from '@/components/AmplifyClientInitializer';
+import { ReactNode } from 'react';
 import theme from '@/styles/theme';
-import AmplifyClientInitializer from '@/lib/amplify/AmplifyClientInitializer';
+import { ThemeProvider } from '@mui/material';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 
-export default function RootLayout(props: { children: ReactNode }) {
-  const hydrateAuth = useHydrateAuth();
-
-  useEffect(() => {
-    configureAmplify();
-  }, []);
-
-  useEffect(() => {
-    console.log('hydratando desde root');
-    hydrateAuth();
-  }, [hydrateAuth]);
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
       suppressHydrationWarning
     >
       <body>
-        <AmplifyClientInitializer>
-          <ThemeProvider theme={theme}>
-            <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-              <ReactQueryProviders>
-                <ClientAuthGuard>{props.children}</ClientAuthGuard>
-                <ToastContainer
-                  position="top-right"
-                  autoClose={3000}
-                />
-              </ReactQueryProviders>
-            </AppRouterCacheProvider>
-          </ThemeProvider>
-        </AmplifyClientInitializer>
+        <AmplifyClientInitializer />
+        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

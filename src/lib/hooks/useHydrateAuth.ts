@@ -1,42 +1,71 @@
 'use client';
-import { fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
-import { useAuthStore } from '@/lib/stores/authStore';
+import { IUserInfo, useAuthStore } from '@/lib/stores/authStore';
+import {
+  fetchAuthSession,
+  fetchUserAttributes,
+  getCurrentUser,
+} from 'aws-amplify/auth';
 import { useCallback } from 'react';
+import { toast } from 'react-toastify';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useHydrateAuth = () => {
-  const { setAuthenticated, setLoading, setUserInfo } = useAuthStore();
+  const { setIsAuth, setUserInfo, setIsHydrating, clearAuth } = useAuthStore(
+    useShallow((state) => ({
+      setIsAuth: state.setIsAuth,
+      setUserInfo: state.setUserInfo,
+      setIsHydrating: state.setIsHydrating,
+      clearAuth: state.clearAuth,
+    })),
+  );
 
   const hydrate = useCallback(async () => {
-    setLoading(true);
+    console.log('useHydrateAuth: HYDRATE FUNCTION CALLED (client-side)');
+    setIsHydrating(true);
     try {
-      console.log('chicking before fetchsession');
       const session = await fetchAuthSession();
-      const accessToken = session.tokens?.accessToken;
-      const idTokenPayload = session.tokens?.idToken?.payload;
-      console.log('session after fetchsession: ', session);
-      if (accessToken && idTokenPayload) {
-        console.log('accessToken: ', accessToken?.payload);
-        console.log('idtoken: ', idTokenPayload);
-        const userAttr = await fetchUserAttributes();
-        setAuthenticated(true);
-        setUserInfo({
-          email: idTokenPayload?.email as string,
-          name: idTokenPayload?.name as string,
+      console.log('token: ', session.tokens);
+      if (session.tokens) {
+        setIsAuth(true);
+        const userAttributes = await fetchUserAttributes();
+        const idTokenPayload = session.tokens?.idToken?.payload;
+        let userId: string | undefined;
+        try {
+          const cognitoUser = await getCurrentUser();
+          userId = cognitoUser.userId;
+        } catch (err) {
+          console.warn(
+            "useHydrateAuth: No current user found via getCurrentUser, 'sub' might be missing.",
+            err,
+          );
+        }
+        const populatedUserInfo: IUserInfo = {
+          id: userId || userAttributes.sub,
+          email: userAttributes.email,
+          name: userAttributes.name || userAttributes.email,
           groups: (idTokenPayload?.['cognito:groups'] as string[]) ?? null,
-          picture: userAttr?.picture || 'false',
-        });
-        console.log('👌hydrato');
+          picture: userAttributes.picture ?? 'false',
+        };
+        console.log(
+          '👌useHydrateAuth client: User authenticated, setting user info:',
+          populatedUserInfo,
+        );
+        setUserInfo(populatedUserInfo);
       } else {
-        setAuthenticated(false);
+        console.log(
+          '❌useHydrateAuth client: No active session, user is not authenticated.',
+        );
         setUserInfo(null);
+        setIsAuth(false);
       }
     } catch (err) {
-      console.error('Error fetching auth session', err);
-      setAuthenticated(false);
-      setUserInfo(null);
+      toast.error(`Error during hydration: ${err}`);
+      clearAuth();
     } finally {
-      setLoading(false);
+      setIsHydrating(false);
+      console.log('💯useHydrateAuth client: Hydration process finished.');
     }
-  }, [setLoading, setAuthenticated, setUserInfo]);
+  }, [setIsHydrating, setUserInfo]);
+
   return hydrate;
 };

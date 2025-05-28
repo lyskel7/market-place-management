@@ -3,7 +3,7 @@ import { ROLES } from '@/lib/constants/frontend';
 import { ERoles } from '@/lib/enums';
 import useCreateUserOptimisticMutation from '@/lib/hooks/useCreateCognitoUserMutation';
 import useResponsive from '@/lib/hooks/useResponsive';
-import { TProfileFormValues } from '@/lib/interfaces';
+import { TProfileValues } from '@/lib/interfaces';
 import { userManagementSchema } from '@/lib/schemas';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
@@ -17,11 +17,13 @@ import {
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Schema } from '../../../amplify/data/resource';
+import { useAuthStore } from '@/lib/stores/authStore';
+import useUpdateUserOptimisticMutation from '@/lib/hooks/useUpdateCognitoUserMutation';
 
 type TFormValues = {
   email: string;
   username: string;
-  rol: string;
+  role: string;
 };
 
 export type SchemaType = Schema['UsersResponse']['type'];
@@ -29,32 +31,53 @@ export type SchemaType = Schema['UsersResponse']['type'];
 const UsersManagementComp = () => {
   const { isMobile } = useResponsive();
   const createUserMutation = useCreateUserOptimisticMutation();
+  const updateUserMutation = useUpdateUserOptimisticMutation();
+  const userForEdit = useAuthStore((state) => state.userForEdit);
+  const setUserForEdit = useAuthStore((state) => state.setUserForEdit);
   const {
     control,
     handleSubmit,
-    register,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TFormValues>({
     resolver: joiResolver(userManagementSchema),
     defaultValues: {
       email: '',
       username: '',
-      rol: '',
+      role: '',
     },
   });
 
+  const handleReset = () => {
+    setUserForEdit(null);
+    reset();
+  };
+
   const handleOnSubmit = handleSubmit(async (data) => {
     // Mapping form data to GraphQL input
-    const input: TProfileFormValues = {
+    const input: TProfileValues = {
       email: data.email,
       name: data.username,
-      groupName: data.rol || ERoles.VIEWERS,
       profilePicture: 'false',
     };
 
     // Calling GraphQL mutation
-    createUserMutation.mutate(input);
+    if (userForEdit) {
+      updateUserMutation.mutate({
+        ...(userForEdit.groupName !== data.role
+          ? { groupName: data.role }
+          : {}),
+        ...input,
+      });
+    } else {
+      createUserMutation.mutate({
+        groupName: data.role || ERoles.VIEWERS,
+        ...input,
+      });
+    }
+
+    reset();
   });
 
   useEffect(() => {
@@ -62,6 +85,12 @@ const UsersManagementComp = () => {
       console.log('Form Validation Errors: ', errors);
     }
   }, [errors]);
+
+  useEffect(() => {
+    setValue('username', (userForEdit?.name as string) || '');
+    setValue('email', (userForEdit?.email as string) || '');
+    setValue('role', (userForEdit?.groupName as string) || '');
+  }, [setValue, userForEdit]);
 
   return (
     <form
@@ -73,42 +102,62 @@ const UsersManagementComp = () => {
         alignItems={'center'}
         gap={2}
       >
-        <TextField
-          id="email"
-          label="Email"
-          type="email"
-          fullWidth
-          error={Boolean(errors.email)}
-          variant="outlined"
-          size="small"
-          {...register('email')}
-          helperText={
-            errors.email && Boolean(errors.email)
-              ? errors.email?.message?.toString()
-              : null
-          }
-        />
-        <TextField
-          id="username"
-          label="User name"
-          type="text"
-          fullWidth
-          error={Boolean(errors.username)}
-          variant="outlined"
-          size="small"
-          {...register('username')}
-          helperText={
-            errors.username && Boolean(errors.username)
-              ? errors.username?.message?.toString()
-              : null
-          }
-        />
         <Controller
-          name="rol"
+          name="email"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <TextField
+              id="email"
+              label="Email"
+              type="email"
+              fullWidth
+              error={Boolean(errors.email)}
+              variant="outlined"
+              size="small"
+              value={value}
+              onChange={(event) => {
+                onChange(event.target.value);
+              }}
+              helperText={
+                errors.email && Boolean(errors.email)
+                  ? errors.email?.message?.toString()
+                  : null
+              }
+            />
+          )}
+        />
+
+        <Controller
+          name="username"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <TextField
+              id="username"
+              label="User name"
+              type="text"
+              fullWidth
+              error={Boolean(errors.username)}
+              variant="outlined"
+              size="small"
+              value={value}
+              onChange={(event) => {
+                onChange(event.target.value);
+              }}
+              helperText={
+                errors.username && Boolean(errors.username)
+                  ? errors.username?.message?.toString()
+                  : null
+              }
+            />
+          )}
+        />
+
+        <Controller
+          name="role"
           control={control}
           render={({ field: { onChange, value } }) => (
             <Autocomplete
-              id="autocomplete-rol"
+              id="autocomplete-role"
               fullWidth
               size="small"
               options={ROLES}
@@ -121,7 +170,7 @@ const UsersManagementComp = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Rol"
+                  label="Role"
                 />
               )}
             />
@@ -140,14 +189,20 @@ const UsersManagementComp = () => {
             disabled={isSubmitting}
             fullWidth={isMobile}
           >
-            {isSubmitting ? <CircularProgress size={24} /> : 'Create'}
+            {isSubmitting ? (
+              <CircularProgress size={24} />
+            ) : userForEdit ? (
+              'Edit'
+            ) : (
+              'Create'
+            )}
           </Button>
           <Button
             type="button"
             variant="outlined"
             disabled={isSubmitting}
             fullWidth={isMobile}
-            onClick={() => reset()}
+            onClick={handleReset}
           >
             {'Reset'}
           </Button>

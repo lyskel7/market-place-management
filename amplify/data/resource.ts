@@ -14,6 +14,7 @@ const schema = a.schema({
     status: a.string(),
     createdAt: a.string(),
     modifiedAt: a.string(),
+    groupName: a.string(),
   }),
   getUsers: a
     .query()

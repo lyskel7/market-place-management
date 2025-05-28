@@ -1,6 +1,6 @@
 import { generateClient } from '@aws-amplify/api';
 import { Schema } from '../../../amplify/data/resource';
-import { TProfileFormValues } from '../interfaces';
+import { TProfileValues } from '../interfaces';
 
 const client = generateClient<Schema>({
   authMode: 'userPool',
@@ -13,7 +13,7 @@ export interface IInputForDeleteUser {
 }
 
 export const createUser = async (
-  input: TProfileFormValues,
+  input: TProfileValues,
 ): Promise<SchemaType> => {
   try {
     console.log('GraphQL on mutation:', input);
@@ -37,6 +37,34 @@ export const createUser = async (
   } catch (error) {
     console.debug('User could not be created', error);
     throw new Error(`User could not be created: ${error}`);
+  }
+};
+
+export const updateUser = async (
+  input: TProfileValues,
+): Promise<SchemaType> => {
+  try {
+    console.log('GraphQL on mutation:', input);
+    const result = await client.mutations.updateUsers(input);
+    console.log('GraphQL Result on mutation:', result);
+
+    if (result.errors && result.errors.length > 0) {
+      console.error('GraphQL Errors:', result.errors);
+      throw new Error(`GraphQL errors occurred: ${result.errors.join(', ')}`);
+    }
+
+    const payload = result.data;
+    console.log('Payload:', payload);
+
+    if (payload) {
+      return payload as SchemaType;
+    } else {
+      const errorMessage = 'Failed updating user. Unknown reason.';
+      throw new Error(errorMessage);
+    }
+  } catch (error) {
+    console.debug('User could not be updated', error);
+    throw new Error(`User could not be updated: ${error}`);
   }
 };
 
@@ -92,25 +120,3 @@ export const deleteUser = async (
     throw new Error(`User could not be deleted: ${error}`);
   }
 };
-
-// export const getUser = async (
-//   userParams: IUser,
-// ): Promise<IApiResponse<IApiResponseAuthData | null>> => {
-//   const res = await AxiosWrapper.getInstance().post<
-//     IUser,
-//     IApiResponseAuthData
-//   >('/auth/signin', userParams);
-//   return res;
-// };
-
-// export const setNewPassword = async (
-//   username: string,
-//   newPassword: string,
-// ): Promise<IApiResponse<IApiResponseAuthData | null>> => {
-//   const res = await AxiosWrapper.getInstance().post<
-//     { username: string; newPassword: string },
-//     IApiResponseAuthData
-//   >('/auth/new-password', { username, newPassword });
-//   console.log('res: ', res);
-//   return res;
-// };

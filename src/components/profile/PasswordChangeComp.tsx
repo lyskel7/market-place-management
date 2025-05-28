@@ -5,11 +5,16 @@ import { toast } from 'react-toastify';
 import PasswordComp from '../profile/PasswordComp';
 import { TPasswordFormValues } from '@/lib/interfaces';
 
-const PasswordChangeComp = () => {
+const PasswordChangeComp = ({
+  isChangeFirstTime,
+}: {
+  isChangeFirstTime: boolean;
+}) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const performPasswordChange = async (data: TPasswordFormValues) => {
     const { oldPassword, newPassword } = data;
+    console.log('data: ', data);
     try {
       if (!oldPassword || !newPassword) {
         toast.error('Empties fields. Please fill out this form.');
@@ -31,11 +36,12 @@ const PasswordChangeComp = () => {
 
   return (
     <PasswordComp
+      key={'password-change-form'}
       onSubmit={performPasswordChange}
       title=""
       description="Change your password. Type a new one"
       isLoading={isLoading}
-      isChangeFirstTime={false}
+      isChangeFirstTime={isChangeFirstTime}
     />
   );
 };
