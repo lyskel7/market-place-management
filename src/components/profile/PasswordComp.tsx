@@ -1,8 +1,10 @@
+'use client';
 import useResponsive from '@/lib/hooks/useResponsive';
 import { unifiedPasswordSchema } from '@/lib/schemas';
 import { joiResolver } from '@hookform/resolvers/joi';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import {
   Box,
   Button,
@@ -11,8 +13,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useAuthStore } from '@/lib/stores/authStore';
 
 export type TFormValues = {
   oldPassword?: string;
@@ -44,13 +48,12 @@ const PasswordComp = (props: TProps) => {
     newPassword: false,
     confirmedPassword: false,
   });
-  console.log('PasswordComp - isChangeFirstTime prop:', isChangeFirstTime);
+  const { push } = useRouter();
 
   const {
     register,
     handleSubmit,
     reset,
-    // setValue,
     formState: { errors, isSubmitting },
   } = useForm<TFormValues>({
     resolver: joiResolver(unifiedPasswordSchema, {
@@ -72,12 +75,20 @@ const PasswordComp = (props: TProps) => {
     }));
   };
 
-  useEffect(() => {
-    console.log('Form Errors:', errors);
-  }, [errors]);
+  // useEffect(() => {
+  //   console.log('Form Errors:', errors);
+  // }, [errors]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form
+      onSubmit={handleSubmit(async (data) => {
+        await onSubmit(data);
+        if (!Object.keys(errors).length && !isSubmitting) {
+          reset();
+        }
+      })}
+      noValidate
+    >
       <Box
         width={isMobile ? '98%' : 1}
         height={'100vh'}
@@ -88,27 +99,34 @@ const PasswordComp = (props: TProps) => {
         <Box
           display={'flex'}
           flexDirection={'column'}
-          width={isMobile ? 1 : 350}
+          width={isMobile ? 1 : 400}
           justifyContent={'center'}
           alignItems={'center'}
-          borderRadius={3}
-          p={2}
+          borderRadius={1}
+          px={4}
+          pt={1}
+          pb={4}
           sx={{
-            borderWidth: 'thin',
-            borderStyle: 'solid',
+            border: 'thin solid rgba(255, 255, 255, 0.2)',
           }}
         >
+          <IconButton
+            sx={{ alignSelf: 'flex-end' }}
+            onClick={() => {
+              push('/auth/signin');
+              useAuthStore.setState({ openClosing: 'none' });
+            }}
+          >
+            <KeyboardBackspaceIcon />
+          </IconButton>
           <Typography
             variant="body1"
-            fontSize={'2rem'}
+            fontWeight={'bold'}
+            fontSize={'1.8rem'}
           >
             {title}
-            {/* Changing password */}
           </Typography>
-          <Typography variant="caption">
-            {description}
-            {/* Please, type your old password and the new password twice to confirm */}
-          </Typography>
+          <Typography variant="caption">{description}</Typography>
           {!isChangeFirstTime && (
             <TextField
               id="oldPassword"
@@ -218,21 +236,19 @@ const PasswordComp = (props: TProps) => {
             >
               {isLoading ? <CircularProgress size={24} /> : 'Change it!'}
             </Button>
-            {!isChangeFirstTime && (
-              <Button
-                type="button"
-                variant="contained"
-                color="warning"
-                fullWidth
-                disabled={isSubmitting}
-                onClick={() => {
-                  reset();
-                  if (onCancel) onCancel();
-                }}
-              >
-                Cancel
-              </Button>
-            )}
+            <Button
+              type="button"
+              variant="contained"
+              color="warning"
+              fullWidth
+              disabled={isSubmitting}
+              onClick={() => {
+                reset();
+                if (onCancel) onCancel();
+              }}
+            >
+              Cancel
+            </Button>
           </Box>
         </Box>
       </Box>

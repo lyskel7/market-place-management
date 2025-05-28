@@ -10,11 +10,12 @@ import { toast } from 'react-toastify';
 import { useShallow } from 'zustand/react/shallow';
 
 export const useHydrateAuth = () => {
-  const { setIsAuth, setUserInfo, setIsHydrating } = useAuthStore(
+  const { setIsAuth, setUserInfo, setIsHydrating, clearAuth } = useAuthStore(
     useShallow((state) => ({
       setIsAuth: state.setIsAuth,
       setUserInfo: state.setUserInfo,
       setIsHydrating: state.setIsHydrating,
+      clearAuth: state.clearAuth,
     })),
   );
 
@@ -56,27 +57,10 @@ export const useHydrateAuth = () => {
         );
         setUserInfo(null);
         setIsAuth(false);
-        // const accessToken = session.tokens?.accessToken;
-        // console.log('session after fetchsession: ', session);
-        // if (accessToken && idTokenPayload) {
-        //   console.log('accessToken: ', accessToken?.payload);
-        //   console.log('idtoken: ', idTokenPayload);
-        //   console.log(
-        //     'useHydrateAuth: Calling setIsAuthenticated(true) and setUserInfo',
-        //   );
-        // setUserInfo({
-        //   id: idTokenPayload?.sub as string,
-        //   email: idTokenPayload?.email as string,
-        //   name: idTokenPayload?.name as string,
-        //   picture: userAttr?.picture || 'false',
-        // });
-        // console.log('👌Hydrated');
       }
     } catch (err) {
       toast.error(`Error during hydration: ${err}`);
-      // console.error('useHydrateAuth client: Error during hydration:', err);
-      setUserInfo(null);
-      setIsAuth(false);
+      clearAuth();
     } finally {
       setIsHydrating(false);
       console.log('💯useHydrateAuth client: Hydration process finished.');

@@ -1,6 +1,7 @@
 'use client';
 import { signIn, AuthError } from 'aws-amplify/auth';
 import type { AuthProvider } from '@toolpad/core';
+// import { useAuthStore } from '@/lib/stores/authStore';
 
 export interface IClientSignInResult {
   success: boolean;
@@ -33,6 +34,7 @@ const handleSignInClient = async (
 
     if (isSignedIn) {
       console.info('Login success (client-side).');
+      document.cookie = 'authenticatedCognito=1; path=/; SameSite=Lax';
       callbacks.onSuccess();
       return;
     }

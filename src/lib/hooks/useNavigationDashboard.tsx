@@ -15,10 +15,10 @@ const useNavigationDashboard = () => {
   console.log('useNavigationDashboard: RENDER. GroupsKey:', firstGroup);
 
   const navigationResult = useMemo(() => {
-    console.log(
-      'useNavigationDashboard: RECALCULATING navigationResult. Based on groupsKey:',
-      firstGroup,
-    );
+    // console.log(
+    //   'useNavigationDashboard: RECALCULATING navigationResult. Based on groupsKey:',
+    //   firstGroup,
+    // );
 
     const menu: Navigation = [];
 
@@ -43,12 +43,6 @@ const useNavigationDashboard = () => {
     }
     return menu;
   }, [firstGroup]);
-
-  // ¡MEMOIZAR EL OBJETO DEVUELTO!
-  // const result = useMemo(() => {
-  //   return navigationResult,
-  //   };
-  // }, [navigationResult]); // Solo crea un nuevo objeto si navigationResult (el array) cambia su referencia.
 
   return navigationResult;
 };

@@ -98,4 +98,5 @@ export type TNavigationPages = {
   id: string;
   component: Navigation;
   path: string;
+  children: string[];
 };

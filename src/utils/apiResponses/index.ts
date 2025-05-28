@@ -33,7 +33,6 @@ export function successResponse<T>(
   cookies?: TCookie[],
   // cookies?: { name: string; value: string; options?: TCookie }[],
 ) {
-  console.log('obj api response: ', data);
   const response = NextResponse.json<IApiResponse<T>>(
     {
       success: true,

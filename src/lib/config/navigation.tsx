@@ -9,6 +9,7 @@ import TurnedInIcon from '@mui/icons-material/TurnedIn';
 import WysiwygIcon from '@mui/icons-material/Wysiwyg';
 import { Branding, NavigationItem } from '@toolpad/core/AppProvider';
 import { TNavigationPages } from '../interfaces';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
 
 const DASHBOARD: NavigationItem[] = [
   {
@@ -79,15 +80,26 @@ const USER: NavigationItem[] = [
 ];
 
 export const BRANDING: Branding = {
-  title: 'My Dashboard',
+  title: 'Market Service Dashboard',
+  logo: <MiscellaneousServicesIcon />,
 };
 
 export const allNavigationPages: TNavigationPages[] = [
-  { id: 'dashboard', component: DASHBOARD, path: '' },
-  { id: 'classifier', component: CLASSIFIER, path: 'classifier' },
-  { id: 'stats', component: STATS, path: 'stats' },
-  { id: 'profile', component: PROFILE, path: 'profile' },
-  { id: 'user', component: USER, path: 'user' },
+  { id: 'dashboard', component: DASHBOARD, path: '', children: ['/'] },
+  {
+    id: 'classifier',
+    component: CLASSIFIER,
+    path: 'classifier',
+    children: ['/categories', '/subcategories', '/variations', '/attributes'],
+  },
+  { id: 'stats', component: STATS, path: 'stats', children: ['/stats'] },
+  {
+    id: 'profile',
+    component: PROFILE,
+    path: 'profile',
+    children: ['/profile/password', '/profile/info'],
+  },
+  { id: 'user', component: USER, path: 'user', children: ['/users'] },
 ];
 
 export const pagePermissions: { [key: string]: string[] } = {

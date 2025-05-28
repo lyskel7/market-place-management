@@ -1,7 +1,8 @@
 import { EXTERNAL_BASE_URL } from '@/lib/constants/backend';
 import { ICategory, IPaginatedResult } from '@/lib/interfaces';
+import { errorResponse, successResponse } from '@/utils/apiResponses';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
   let errorMessage: string;
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const response: AxiosResponse<IPaginatedResult<ICategory> | null> =
       await axios.get(`${EXTERNAL_BASE_URL}/items?${params.toString()}`);
-    return NextResponse.json(response.data);
+    return successResponse(response.data, 'Elements fetched successfully', 200);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
@@ -30,16 +31,16 @@ export async function GET(req: NextRequest) {
     } else {
       errorMessage = `Unknown error: ${error}`;
     }
-
-    return NextResponse.json(
-      { error: errorMessage },
-      {
-        status: statusCode,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    return errorResponse(errorMessage, statusCode);
+    // return NextResponse.json(
+    //   { error: errorMessage },
+    //   {
+    //     status: statusCode,
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //   },
+    // );
   }
 }
 
